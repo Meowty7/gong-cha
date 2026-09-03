@@ -1,0 +1,18 @@
+# Build artifacts
+bin/
+tmp/
+coverage.out
+*.test
+*.out
+
+# Local data and caches
+data/
+
+# Editor and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Test-only fixtures not needed in the image
+**/*_test.go

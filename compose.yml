@@ -1,3 +1,5 @@
+name: gongcha
+
 services:
   db:
     image: postgres:18.6
@@ -7,16 +9,47 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-gongcha}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gongcha}
       POSTGRES_DB: ${POSTGRES_DB:-gongcha_cup}
+    # Published to localhost for local `go run` development only.
+    # Production deployment must not publish the database port.
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./backend/migrations:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gongcha} -d ${POSTGRES_DB:-gongcha_cup}"]
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - gongcha-net
+
+  api:
+    build:
+      context: ./backend
+    container_name: gongcha_api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-gongcha}:${POSTGRES_PASSWORD:-gongcha}@db:5432/${POSTGRES_DB:-gongcha_cup}?sslmode=disable
+      SERVER_PORT: "8080"
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:4321}
+      APP_ENV: ${APP_ENV:-development}
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "/healthcheck"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - gongcha-net
+
+networks:
+  gongcha-net:
+    driver: bridge
 
 volumes:
   pgdata:
