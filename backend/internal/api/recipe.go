@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -209,9 +210,6 @@ func validateRecipe(dto recipeDTO, id string) (domain.Recipe, []domain.RecipeCom
 	return rec, comps, nil
 }
 
-// errString returns a validation error carrying a plain message.
-func errString(msg string) error { return validationError{msg: msg} }
-
-type validationError struct{ msg string }
-
-func (e validationError) Error() string { return e.msg }
+// errString returns a validation error carrying a plain message. It wraps
+// domain.ErrValidation so writeDomainError maps it to HTTP 400.
+func errString(msg string) error { return fmt.Errorf("%w: %s", domain.ErrValidation, msg) }

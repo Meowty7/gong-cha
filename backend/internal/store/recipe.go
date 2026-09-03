@@ -100,6 +100,39 @@ func (r *RecipeRepository) Graph(ctx context.Context) ([]recipe.Edge, error) {
 	return out, mapError(rows.Err())
 }
 
+// AllComponents returns every recipe component across all recipes.
+func (r *RecipeRepository) AllComponents(ctx context.Context) ([]domain.RecipeComponent, error) {
+	rows, err := r.db.Query(ctx, `
+		SELECT recipe_id, component_product_id, quantity, unit
+		FROM recipe_components ORDER BY recipe_id, component_product_id`)
+	if err != nil {
+		return nil, mapError(err)
+	}
+	defer rows.Close()
+	var out []domain.RecipeComponent
+	for rows.Next() {
+		var c domain.RecipeComponent
+		if err := rows.Scan(&c.RecipeID, &c.ComponentProductID, &c.Quantity, &c.Unit); err != nil {
+			return nil, mapError(err)
+		}
+		out = append(out, c)
+	}
+	return out, mapError(rows.Err())
+}
+
+// LoadBOM builds the full bill-of-materials engine from all recipes and components.
+func (r *RecipeRepository) LoadBOM(ctx context.Context) (*recipe.BOM, error) {
+	recipes, err := r.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+	comps, err := r.AllComponents(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return recipe.NewBOM(recipes, comps), nil
+}
+
 // Create inserts a recipe and its components after rejecting dependency cycles.
 func (r *RecipeRepository) Create(ctx context.Context, rec domain.Recipe, comps []domain.RecipeComponent) error {
 	if err := r.rejectCycle(ctx, rec, comps, nil); err != nil {

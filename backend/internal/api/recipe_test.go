@@ -67,7 +67,7 @@ func (f *fakeRecipeStore) Delete(_ context.Context, id string) error {
 }
 
 func newRecipeServer(rs *fakeRecipeStore) *Server {
-	return New(nil, nil, nil, rs, slog.New(slog.NewTextHandler(&discardWriter{}, nil)), "test")
+	return New(nil, nil, nil, rs, nil, nil, nil, slog.New(slog.NewTextHandler(&discardWriter{}, nil)), "test")
 }
 
 func TestCreateRecipe_Success(t *testing.T) {

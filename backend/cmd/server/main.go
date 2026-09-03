@@ -52,10 +52,11 @@ func run() error {
 	products := store.NewProductRepository(pool)
 	inventory := store.NewInventoryRepository(pool)
 	recipes := store.NewRecipeRepository(pool)
+	events := store.NewEventRepository(pool)
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.ServerPort,
-		Handler:      api.New(pool, products, inventory, recipes, logger, version),
+		Handler:      api.New(pool, products, inventory, recipes, recipes, inventory, events, logger, version),
 		ReadTimeout:  cfg.ReadTimeout,
 		WriteTimeout: cfg.WriteTimeout,
 		IdleTimeout:  cfg.IdleTimeout,

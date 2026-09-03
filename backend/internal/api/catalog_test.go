@@ -98,7 +98,7 @@ func (f *fakeInventoryStore) Upsert(_ context.Context, b domain.InventoryBalance
 }
 
 func newCatalogServer(ps *fakeProductStore, inv *fakeInventoryStore) *Server {
-	return New(nil, ps, inv, nil, slog.New(slog.NewTextHandler(&discardWriter{}, nil)), "test")
+	return New(nil, ps, inv, nil, nil, nil, nil, slog.New(slog.NewTextHandler(&discardWriter{}, nil)), "test")
 }
 
 // doJSON builds a request with an optional JSON body, runs it against the

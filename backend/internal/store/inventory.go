@@ -3,8 +3,10 @@ package store
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/gongcha-cup/backend/internal/domain"
+	"github.com/gongcha-cup/backend/internal/recipe"
 	"github.com/shopspring/decimal"
 )
 
@@ -78,4 +80,60 @@ func (r *InventoryRepository) SetQuantity(ctx context.Context, productID string,
 		return fmt.Errorf("%w: balance for %q", domain.ErrNotFound, productID)
 	}
 	return nil
+}
+
+// Snapshot returns all balances as a recipe.Inventory map keyed by product id.
+func (r *InventoryRepository) Snapshot(ctx context.Context) (recipe.Inventory, error) {
+	rows, err := r.db.Query(ctx, `SELECT product_id, quantity FROM inventory_balances`)
+	if err != nil {
+		return nil, mapError(err)
+	}
+	defer rows.Close()
+	inv := make(recipe.Inventory)
+	for rows.Next() {
+		var pid string
+		var qty decimal.Decimal
+		if err := rows.Scan(&pid, &qty); err != nil {
+			return nil, mapError(err)
+		}
+		inv[pid] = qty
+	}
+	return inv, mapError(rows.Err())
+}
+
+// Movement is one ledger entry for the inventory history endpoint.
+type Movement struct {
+	MovementID     int64
+	ProductID      string
+	QuantityChange decimal.Decimal
+	BalanceAfter   decimal.Decimal
+	Unit           domain.Unit
+	Reason         string
+	CreatedAt      time.Time
+}
+
+// History returns the ledger movements for a product, newest first.
+func (r *InventoryRepository) History(ctx context.Context, productID string, limit int) ([]Movement, error) {
+	if limit <= 0 || limit > 1000 {
+		limit = 100
+	}
+	rows, err := r.db.Query(ctx, `
+		SELECT movement_id, product_id, quantity_change, balance_after, unit, reason, created_at
+		FROM inventory_movements
+		WHERE product_id=$1
+		ORDER BY created_at DESC
+		LIMIT $2`, productID, limit)
+	if err != nil {
+		return nil, mapError(err)
+	}
+	defer rows.Close()
+	var out []Movement
+	for rows.Next() {
+		var m Movement
+		if err := rows.Scan(&m.MovementID, &m.ProductID, &m.QuantityChange, &m.BalanceAfter, &m.Unit, &m.Reason, &m.CreatedAt); err != nil {
+			return nil, mapError(err)
+		}
+		out = append(out, m)
+	}
+	return out, mapError(rows.Err())
 }
