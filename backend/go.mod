@@ -8,6 +8,7 @@ require (
 	github.com/go-playground/validator/v10 v10.27.0
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/pressly/goose/v3 v3.24.0
+	github.com/shopspring/decimal v1.4.0
 )
 
 require (
