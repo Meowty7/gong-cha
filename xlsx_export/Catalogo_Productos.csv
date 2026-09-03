@@ -1,0 +1,61 @@
+producto_id,nombre,tipo,unidad,descripcion,imagen_ref
+MP001,Azúcar blanca,Materia prima,g,Endulzante granulado,img/azucar.jpg
+MP002,Té negro seco,Materia prima,g,Hojas de té negro,img/te_negro.jpg
+MP003,Té verde seco,Materia prima,g,Hojas de té verde,img/te_verde.jpg
+MP004,Té jazmín seco,Materia prima,g,Hojas aromatizadas con jazmín,img/te_jazmin.jpg
+MP005,Leche entera,Materia prima,ml,Leche líquida,img/leche_entera.jpg
+MP006,Leche de coco,Materia prima,ml,Bebida vegetal de coco,img/leche_coco.jpg
+MP007,Leche de avena,Materia prima,ml,Bebida vegetal de avena,img/leche_avena.jpg
+MP008,Crema no láctea,Materia prima,g,Crema en polvo,img/crema.jpg
+MP009,Tapioca cruda,Materia prima,g,Perlas de tapioca sin cocer,img/tapioca_cruda.jpg
+MP010,Polvo de taro,Materia prima,g,Mezcla sabor taro,img/taro.jpg
+MP011,Polvo de matcha,Materia prima,g,Té verde pulverizado,img/matcha.jpg
+MP012,Pulpa de mango,Materia prima,ml,Pulpa de fruta,img/mango.jpg
+MP013,Pulpa de fresa,Materia prima,ml,Pulpa de fruta,img/fresa.jpg
+MP014,Pulpa de maracuyá,Materia prima,ml,Pulpa de fruta,img/maracuya.jpg
+MP015,Jugo de limón,Materia prima,ml,Jugo filtrado,img/limon.jpg
+MP016,Jugo de durazno,Materia prima,ml,Jugo de fruta,img/durazno.jpg
+MP017,Jarabe de miel,Materia prima,ml,Jarabe sabor miel,img/miel.jpg
+MP018,Jarabe de vainilla,Materia prima,ml,Jarabe sabor vainilla,img/vainilla.jpg
+MP019,Jarabe de caramelo,Materia prima,ml,Jarabe sabor caramelo,img/caramelo.jpg
+MP020,Jarabe de azúcar morena,Materia prima,ml,Jarabe concentrado,img/azucar_morena.jpg
+MP021,Semillas de chía,Materia prima,g,Semillas secas,img/chia.jpg
+MP022,Polvo de gelatina,Materia prima,g,Base para jelly,img/gelatina.jpg
+MP023,Polvo de pudín,Materia prima,g,Base para pudín,img/pudin.jpg
+MP024,Agua filtrada,Materia prima,ml,Agua para preparaciones,img/agua.jpg
+MP025,Hielo,Materia prima,g,Hielo triturado,img/hielo.jpg
+MP026,Sal,Materia prima,g,Sal fina,img/sal.jpg
+MP027,Queso crema,Materia prima,g,Base láctea para espuma,img/queso_crema.jpg
+MP028,Crema para batir,Materia prima,ml,Crema líquida,img/crema_batir.jpg
+MP029,Cacao en polvo,Materia prima,g,Cacao sin azúcar,img/cacao.jpg
+MP030,Galleta triturada,Materia prima,g,Topping de galleta,img/galleta.jpg
+ST001,Jarabe simple,Semiterminado,ml,Solución de azúcar,img/jarabe_simple.jpg
+ST002,Té negro preparado,Semiterminado,ml,Infusión concentrada,img/base_negra.jpg
+ST003,Té verde preparado,Semiterminado,ml,Infusión concentrada,img/base_verde.jpg
+ST004,Té jazmín preparado,Semiterminado,ml,Infusión concentrada,img/base_jazmin.jpg
+ST005,Tapioca cocida,Semiterminado,g,Perlas cocidas y endulzadas,img/tapioca_cocida.jpg
+ST006,Jelly de limón,Semiterminado,g,Gelatina cítrica en cubos,img/jelly_limon.jpg
+ST007,Pudín de vainilla,Semiterminado,g,Pudín preparado,img/pudin_vainilla.jpg
+ST008,Espuma de queso,Semiterminado,ml,Cobertura cremosa salada,img/espuma_queso.jpg
+ST009,Base de leche,Semiterminado,ml,Mezcla láctea estándar,img/base_leche.jpg
+ST010,Concentrado de azúcar morena,Semiterminado,ml,Jarabe oscuro diluido,img/concentrado_morena.jpg
+PT001,Milk Tea Clásico,Terminado,unidad,Té negro con base de leche,img/milk_tea.jpg
+PT002,Milk Tea con Tapioca,Terminado,unidad,Té con leche y perlas,img/milk_tea_tapioca.jpg
+PT003,Taro Milk Tea,Terminado,unidad,Bebida cremosa de taro,img/taro_milk_tea.jpg
+PT004,Matcha Milk Tea,Terminado,unidad,Bebida cremosa de matcha,img/matcha_milk_tea.jpg
+PT005,Mango Green Tea,Terminado,unidad,Té verde frutal,img/mango_green_tea.jpg
+PT006,Strawberry Green Tea,Terminado,unidad,Té verde con fresa,img/strawberry_green_tea.jpg
+PT007,Passion Fruit Green Tea,Terminado,unidad,Té verde con maracuyá,img/passion_green_tea.jpg
+PT008,Peach Black Tea,Terminado,unidad,Té negro con durazno,img/peach_black_tea.jpg
+PT009,Lemon Jasmine Tea,Terminado,unidad,Té jazmín cítrico,img/lemon_jasmine.jpg
+PT010,Brown Sugar Boba Milk,Terminado,unidad,Leche con azúcar morena y tapioca,img/brown_sugar_boba.jpg
+PT011,Coconut Taro,Terminado,unidad,Taro con leche de coco,img/coconut_taro.jpg
+PT012,Oat Matcha,Terminado,unidad,Matcha con leche de avena,img/oat_matcha.jpg
+PT013,Honey Black Tea,Terminado,unidad,Té negro con miel,img/honey_black_tea.jpg
+PT014,Mango Chia Tea,Terminado,unidad,Té de mango con chía,img/mango_chia.jpg
+PT015,Strawberry Jelly Tea,Terminado,unidad,Té de fresa con jelly,img/strawberry_jelly.jpg
+PT016,Caramel Milk Tea,Terminado,unidad,Milk tea con caramelo,img/caramel_milk_tea.jpg
+PT017,Vanilla Pudding Milk Tea,Terminado,unidad,Milk tea con pudín,img/vanilla_pudding.jpg
+PT018,Jasmine Cheese Foam Tea,Terminado,unidad,Té jazmín con espuma de queso,img/jasmine_cheese.jpg
+PT019,Chocolate Cookie Milk,Terminado,unidad,Bebida de cacao y galleta,img/chocolate_cookie.jpg
+PT020,Passion Lemon Tea,Terminado,unidad,Té verde con maracuyá y limón,img/passion_lemon.jpg

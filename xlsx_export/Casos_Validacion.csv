@@ -1,0 +1,9 @@
+caso_id,nombre,objetivo,entrada_o_precondicion,resultado_esperado
+CP01,Producción directa simple,PT003,"Con inventario exclusivo: MP010=350 g, MP005=2600 ml, MP008=600 g, MP024=1000 ml, MP001=600 g, MP025=5000 g.",Debe producir 10 unidades completas; el taro queda en 0 g.
+CP02,Receta encadenada e insumo crítico,PT002,"Usar el inventario oficial y expandir ST002, ST009, ST005 y ST001.",El resultado debe identificar un único máximo reproducible y mostrar el componente limitante.
+CP03,Cálculo inverso,PT010,Solicitar 25 bebidas.,"Requiere 7,500 ml de leche, 1,375 ml de ST010, 2,000 g de ST005 y 4,000 g de hielo antes de expandir semiterminados."
+CP04,Demanda consolidada,EVT001,Calcular todas las líneas de Demanda_Evento juntas.,"Los insumos compartidos deben sumarse una sola vez por su consumo total, sin doble conteo."
+CP05,Inventario insuficiente,PT018,Fijar ST008=100 ml y no permitir producir más ST008.,Solo puede producir 1 unidad completa; sobran 40 ml de ST008.
+CP06,Validación de ciclo,ST002,Intentar agregar ST002 como componente directo o indirecto de su propia receta.,El sistema debe rechazar la receta circular con un mensaje comprensible.
+CP07,Simulación vs. confirmación,PT001,Simular 3 unidades y luego confirmar 3 unidades.,La simulación no cambia existencias; la confirmación descuenta exactamente los componentes.
+CP08,Cantidad inválida,PT005,"Ingresar demanda 0, negativa o no numérica.",El sistema debe impedir el cálculo y conservar el inventario.
