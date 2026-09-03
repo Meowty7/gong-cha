@@ -18,18 +18,20 @@ type Server struct {
 	pool      *pgxpool.Pool
 	products  ProductStore
 	inventory InventoryStore
+	recipes   RecipeStore
 	logger    *slog.Logger
 	version   string
 }
 
 // New assembles the API server with middleware and routes.
-func New(pool *pgxpool.Pool, products ProductStore, inventory InventoryStore, logger *slog.Logger, version string) *Server {
+func New(pool *pgxpool.Pool, products ProductStore, inventory InventoryStore, recipes RecipeStore, logger *slog.Logger, version string) *Server {
 	r := chi.NewRouter()
 	s := &Server{
 		router:    r,
 		pool:      pool,
 		products:  products,
 		inventory: inventory,
+		recipes:   recipes,
 		logger:    logger,
 		version:   version,
 	}
@@ -42,6 +44,9 @@ func New(pool *pgxpool.Pool, products ProductStore, inventory InventoryStore, lo
 	r.Get("/health/ready", s.healthReady)
 	if s.products != nil && s.inventory != nil {
 		s.registerCatalogRoutes(r)
+	}
+	if s.recipes != nil {
+		s.registerRecipeRoutes(r)
 	}
 	return s
 }

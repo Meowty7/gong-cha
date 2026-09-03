@@ -9,6 +9,7 @@ import (
 	"github.com/gongcha-cup/backend/internal/domain"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // DBTX is the minimal interface satisfied by both pgxpool.Pool and pgx.Tx,
@@ -17,6 +18,20 @@ type DBTX interface {
 	Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error)
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
+}
+
+// beginTx returns a transaction from db. If db is already a pgx.Tx it is
+// returned as-is (commit=false, caller owns it). If db is a pool, a new
+// transaction is started (commit=true, caller must commit or rollback).
+func beginTx(ctx context.Context, db DBTX) (pgx.Tx, bool, error) {
+	if tx, ok := db.(pgx.Tx); ok {
+		return tx, false, nil
+	}
+	if pool, ok := db.(*pgxpool.Pool); ok {
+		tx, err := pool.Begin(ctx)
+		return tx, true, err
+	}
+	return nil, false, fmt.Errorf("unsupported DBTX type %T", db)
 }
 
 // mapError translates PostgreSQL errors into domain sentinel errors.
