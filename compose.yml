@@ -9,6 +9,9 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-gongcha}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gongcha}
       POSTGRES_DB: ${POSTGRES_DB:-gongcha_cup}
+      # postgres:18+ defaults PGDATA to /var/lib/postgresql/18/docker;
+      # pin it to the volume mount path so the entrypoint initializes correctly.
+      PGDATA: /var/lib/postgresql/data
     # Published to localhost for local `go run` development only.
     # Production deployment must not publish the database port.
     ports:

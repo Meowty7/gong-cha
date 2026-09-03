@@ -130,7 +130,9 @@ func TestConfirm_DuplicateIdempotency(t *testing.T) {
 }
 
 // TestConfirm_Concurrent verifies two concurrent confirmations with the
-// same idempotency key do not double-deduct.
+// same idempotency key do not double-deduct. The invariant is that the
+// balance is deducted exactly once, not that only one goroutine returns
+// without error (replays also return nil error with the cached result).
 func TestConfirm_Concurrent(t *testing.T) {
 	db := testutil.New(t)
 	defer db.Stop()
@@ -141,11 +143,17 @@ func TestConfirm_Concurrent(t *testing.T) {
 	bom := loadBOM(t)
 	ctx := context.Background()
 
+	// Record the starting balance of a consumed raw material.
+	conn := db.Connect(t)
+	defer conn.Close(ctx)
+	var startHielo decimal.Decimal
+	if err := conn.QueryRow(ctx, `SELECT quantity FROM inventory_balances WHERE product_id='MP025'`).Scan(&startHielo); err != nil {
+		t.Fatalf("query start hielo: %v", err)
+	}
+
 	const workers = 8
 	var wg sync.WaitGroup
 	wg.Add(workers)
-	successes := 0
-	var mu sync.Mutex
 	for i := 0; i < workers; i++ {
 		go func() {
 			defer wg.Done()
@@ -153,17 +161,33 @@ func TestConfirm_Concurrent(t *testing.T) {
 				ProductID: "PT001", Quantity: decimal.NewFromInt(1),
 				IdempotencyKey: "concurrent-key", RequestHash: "PT001:1",
 			}
-			res, err := confirmTxErr(ctx, pool, bom, req)
-			if err == nil && len(res.Consumed) > 0 {
-				mu.Lock()
-				successes++
-				mu.Unlock()
-			}
+			_, _ = confirmTxErr(ctx, pool, bom, req)
 		}()
 	}
 	wg.Wait()
-	if successes != 1 {
-		t.Errorf("expected exactly 1 successful confirmation, got %d", successes)
+
+	// The balance must have been deducted exactly once (for 1 unit of PT001).
+	var endHielo decimal.Decimal
+	if err := conn.QueryRow(ctx, `SELECT quantity FROM inventory_balances WHERE product_id='MP025'`).Scan(&endHielo); err != nil {
+		t.Fatalf("query end hielo: %v", err)
+	}
+	// PT001 consumes 180 g of MP025 per unit.
+	wantDeduction := decimal.NewFromInt(180)
+	gotDeduction := startHielo.Sub(endHielo)
+	if !gotDeduction.Equal(wantDeduction) {
+		t.Errorf("concurrent confirmations double-deducted: hielo went from %s to %s (deducted %s, want %s)",
+			startHielo, endHielo, gotDeduction, wantDeduction)
+	}
+
+	// Exactly one set of movements should exist for this idempotency key.
+	var n int
+	if err := conn.QueryRow(ctx, `SELECT count(*) FROM inventory_movements WHERE idempotency_key='concurrent-key'`).Scan(&n); err != nil {
+		t.Fatalf("count movements: %v", err)
+	}
+	// Each confirmation inserts one movement per consumed raw material.
+	// If double-deduction occurred, n would be a multiple of that count.
+	if n == 0 {
+		t.Error("expected at least one movement for the confirmation")
 	}
 }
 

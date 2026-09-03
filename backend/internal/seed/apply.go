@@ -58,17 +58,19 @@ func Run(ctx context.Context, pool *pgxpool.Pool, dir string) (Counts, Data, err
 	return counts, data, nil
 }
 
+const productInsert = `INSERT INTO products (product_id, name, type, unit, description, image_ref)
+VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (product_id) DO NOTHING`
+
 func applyProducts(ctx context.Context, tx pgx.Tx, ps []domain.Product) (int64, error) {
-	rows := make([][]any, len(ps))
-	for i, p := range ps {
-		rows[i] = []any{p.ID, p.Name, p.Type, p.Unit, p.Description, p.ImageRef}
+	var n int64
+	for _, p := range ps {
+		ct, err := tx.Exec(ctx, productInsert, p.ID, p.Name, p.Type, p.Unit, p.Description, p.ImageRef)
+		if err != nil {
+			return n, err
+		}
+		n += ct.RowsAffected()
 	}
-	if _, err := tx.CopyFrom(ctx, pgx.Identifier{"products"},
-		[]string{"product_id", "name", "type", "unit", "description", "image_ref"},
-		pgx.CopyFromRows(rows)); err != nil {
-		return 0, err
-	}
-	return int64(len(ps)), nil
+	return n, nil
 }
 
 const recipeInsert = `INSERT INTO recipes (recipe_id, product_result_id, batch_yield, yield_unit)

@@ -63,7 +63,7 @@ CREATE TABLE inventory_movements (
     created_at      timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX idx_movements_product_created ON inventory_movements (product_id, created_at);
-CREATE UNIQUE INDEX idx_movements_idempotency ON inventory_movements (idempotency_key)
+CREATE UNIQUE INDEX idx_movements_idempotency ON inventory_movements (idempotency_key, product_id)
     WHERE idempotency_key IS NOT NULL;
 
 -- Events and their consolidated demand lines.

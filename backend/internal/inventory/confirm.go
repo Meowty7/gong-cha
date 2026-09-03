@@ -95,13 +95,14 @@ func Confirm(ctx context.Context, tx pgx.Tx, bom *recipe.BOM, req Request) (Resu
 		}
 	}
 	after, _ := json.Marshal(snapshotAfter(balances, consumed))
+	result := Result{Consumed: consumed, Leftovers: leftoversAfter(balances, consumed)}
+	resultJSON, _ := json.Marshal(result)
 	if _, err := tx.Exec(ctx, `
 		INSERT INTO calculation_runs (run_type, request, result)
 		VALUES ('confirmation', $1, $2)`,
-		runJSON(req, before, after), ""); err != nil {
+		runJSON(req, before, after), resultJSON); err != nil {
 		return Result{}, fmt.Errorf("record run: %w", err)
 	}
-	result := Result{Consumed: consumed, Leftovers: leftoversAfter(balances, consumed)}
 	respBody, _ := json.Marshal(result)
 	if _, err := tx.Exec(ctx, `
 		UPDATE idempotency_keys SET response_body=$2, status_code=200 WHERE idempotency_key=$1`,
