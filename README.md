@@ -36,7 +36,7 @@ Versiones verificadas para este proyecto:
 ├── frontend/         # Astro + Vue + Tailwind (Bun)
 ├── xlsx_export/      # Datos oficiales convertidos a CSV UTF-8
 ├── business/         # Investigación del sitio y modelo de negocio
-├── docker-compose.yml
+├── compose.yml
 ├── Reglamento_GongchaCUP_2026.md
 └── gong-cha-tarea-analisis.md
 ```
