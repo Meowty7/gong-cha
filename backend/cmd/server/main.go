@@ -15,6 +15,7 @@ import (
 	"github.com/gongcha-cup/backend/internal/api"
 	"github.com/gongcha-cup/backend/internal/config"
 	"github.com/gongcha-cup/backend/internal/database"
+	"github.com/gongcha-cup/backend/internal/store"
 )
 
 // version is set at build time via -ldflags.
@@ -48,9 +49,12 @@ func run() error {
 	}
 	defer pool.Close()
 
+	products := store.NewProductRepository(pool)
+	inventory := store.NewInventoryRepository(pool)
+
 	srv := &http.Server{
 		Addr:         ":" + cfg.ServerPort,
-		Handler:      api.New(pool, logger, version),
+		Handler:      api.New(pool, products, inventory, logger, version),
 		ReadTimeout:  cfg.ReadTimeout,
 		WriteTimeout: cfg.WriteTimeout,
 		IdleTimeout:  cfg.IdleTimeout,

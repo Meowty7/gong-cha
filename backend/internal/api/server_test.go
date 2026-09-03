@@ -9,7 +9,7 @@ import (
 )
 
 func TestHealthLive_OK(t *testing.T) {
-	s := New(nil, slog.New(slog.NewTextHandler(&discardWriter{}, nil)), "test")
+	s := New(nil, nil, nil, slog.New(slog.NewTextHandler(&discardWriter{}, nil)), "test")
 	req := httptest.NewRequest(http.MethodGet, "/health/live", nil)
 	rec := httptest.NewRecorder()
 	s.Handler().ServeHTTP(rec, req)
@@ -29,7 +29,7 @@ func TestHealthLive_OK(t *testing.T) {
 }
 
 func TestHealthReady_UnavailableWhenPoolNil(t *testing.T) {
-	s := New(nil, slog.New(slog.NewTextHandler(&discardWriter{}, nil)), "test")
+	s := New(nil, nil, nil, slog.New(slog.NewTextHandler(&discardWriter{}, nil)), "test")
 	req := httptest.NewRequest(http.MethodGet, "/health/ready", nil)
 	rec := httptest.NewRecorder()
 	s.Handler().ServeHTTP(rec, req)

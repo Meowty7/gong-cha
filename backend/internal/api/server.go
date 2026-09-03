@@ -14,16 +14,25 @@ import (
 
 // Server bundles the HTTP server, router, and its dependencies.
 type Server struct {
-	router  http.Handler
-	pool    *pgxpool.Pool
-	logger  *slog.Logger
-	version string
+	router    http.Handler
+	pool      *pgxpool.Pool
+	products  ProductStore
+	inventory InventoryStore
+	logger    *slog.Logger
+	version   string
 }
 
 // New assembles the API server with middleware and routes.
-func New(pool *pgxpool.Pool, logger *slog.Logger, version string) *Server {
+func New(pool *pgxpool.Pool, products ProductStore, inventory InventoryStore, logger *slog.Logger, version string) *Server {
 	r := chi.NewRouter()
-	s := &Server{router: r, pool: pool, logger: logger, version: version}
+	s := &Server{
+		router:    r,
+		pool:      pool,
+		products:  products,
+		inventory: inventory,
+		logger:    logger,
+		version:   version,
+	}
 	r.Use(middleware.RequestID)
 	r.Use(requestLogger(logger))
 	r.Use(middleware.Recoverer)
@@ -31,6 +40,9 @@ func New(pool *pgxpool.Pool, logger *slog.Logger, version string) *Server {
 	r.Use(corsMiddleware())
 	r.Get("/health/live", s.healthLive)
 	r.Get("/health/ready", s.healthReady)
+	if s.products != nil && s.inventory != nil {
+		s.registerCatalogRoutes(r)
+	}
 	return s
 }
 
