@@ -61,9 +61,17 @@ type Capacity struct {
 
 // Expand computes the immediate components and the fully expanded
 // raw-material requirements to produce quantity (in productID's yield unit)
-// of productID. quantity must be positive.
+// of productID. quantity must be positive. All semi-finished
+// components are expanded to raw materials.
 func (b *BOM) Expand(productID string, quantity decimal.Decimal) (Expansion, error) {
 	return b.expand(productID, quantity, nil)
+}
+
+// ExpandWithDirect is like Expand but applies the useDirect intermediate-production
+// policy: listed semi-finished products are consumed from inventory
+// directly instead of being expanded to raw materials.
+func (b *BOM) ExpandWithDirect(productID string, quantity decimal.Decimal, useDirect map[string]bool) (Expansion, error) {
+	return b.expand(productID, quantity, useDirect)
 }
 
 // expand is the shared core of Expand; useDirect lists semi-finished
