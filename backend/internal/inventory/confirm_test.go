@@ -48,9 +48,35 @@ func TestConfirm_CP07_Deducts(t *testing.T) {
 	if err := tx.Commit(ctx); err != nil {
 		t.Fatalf("commit: %v", err)
 	}
-	// MP025 (hielo) consumed: 180 * 3 = 540 g.
+	// CP07: verify that every consumed raw material was deducted exactly.
 	conn := db.Connect(t)
 	defer conn.Close(ctx)
+	for _, c := range res.Consumed {
+		var after decimal.Decimal
+		if err := conn.QueryRow(ctx,
+			`SELECT quantity FROM inventory_balances WHERE product_id=$1`, c.ProductID).Scan(&after); err != nil {
+			t.Fatalf("query %s: %v", c.ProductID, err)
+		}
+		// Official starting balance minus consumed.
+		var before decimal.Decimal
+		if err := conn.QueryRow(ctx,
+			`SELECT quantity FROM inventory_balances WHERE product_id=$1`, c.ProductID).Scan(&before); err != nil {
+			t.Fatalf("query before %s: %v", c.ProductID, err)
+		}
+		_ = before // after is the current value; we check it against the consumed map
+		// The balance_after should equal original - consumed.
+		// We verify via the movement ledger instead.
+		var movementQty decimal.Decimal
+		if err := conn.QueryRow(ctx, `
+			SELECT quantity_change FROM inventory_movements
+			WHERE product_id=$1 AND idempotency_key='cp07-key-1'`, c.ProductID).Scan(&movementQty); err != nil {
+			t.Fatalf("query movement %s: %v", c.ProductID, err)
+		}
+		if !movementQty.Equal(c.Quantity.Neg()) {
+			t.Errorf("CP07: %s movement %s != -%s", c.ProductID, movementQty, c.Quantity)
+		}
+	}
+	// MP025 (hielo) consumed: 180 * 3 = 540 g.
 	var hielo decimal.Decimal
 	if err := conn.QueryRow(ctx, `SELECT quantity FROM inventory_balances WHERE product_id='MP025'`).Scan(&hielo); err != nil {
 		t.Fatalf("query hielo: %v", err)

@@ -35,6 +35,7 @@ pgdata/
 
 # Datos locales
 backend/data/
+.worktrees/
 
 # Cursor workspace
 .cursor/

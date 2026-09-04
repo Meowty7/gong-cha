@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gongcha-cup/backend/internal/domain"
+	"github.com/shopspring/decimal"
 )
 
 // Consolidation is the result of consolidating an event's demands.
@@ -33,4 +34,33 @@ func (b *BOM) ConsolidateEvent(demands []domain.EventDemand) (Consolidation, err
 		}
 	}
 	return Consolidation{RawMaterials: flatten(raw), PerLine: perLine}, nil
+}
+
+// Shortage is one consolidated raw-material line compared to inventory.
+type Shortage struct {
+	ProductID string
+	Need      decimal.Decimal
+	Have      decimal.Decimal
+	Shortage  decimal.Decimal
+	Unit      domain.Unit
+}
+
+// CompareInventory reports need, have, and max(need-have, 0) for each requirement.
+func CompareInventory(needs []Requirement, inv Inventory) []Shortage {
+	out := make([]Shortage, 0, len(needs))
+	for _, n := range needs {
+		have := inv[n.ProductID]
+		short := n.Quantity.Sub(have)
+		if short.IsNegative() {
+			short = decimal.Zero
+		}
+		out = append(out, Shortage{
+			ProductID: n.ProductID,
+			Need:      n.Quantity,
+			Have:      have,
+			Shortage:  short,
+			Unit:      n.Unit,
+		})
+	}
+	return out
 }

@@ -1,0 +1,346 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import '../styles/global.css';
+import AppSidebar from '../components/AppSidebar.astro';
+import ToastHost from '../components/ToastHost.vue';
+import { es } from '../lib/i18n/es';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { 
+  title = es.app.name,
+  description = es.dashboard.description 
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preload" href="/fonts/sigokae-regular.woff2" as="font" type="font/woff2" crossorigin />
+    
+    <title>{title}</title>
+    <ClientRouter />
+  </head>
+  
+  <body class="min-h-screen bg-(--color-bg-warm) text-(--color-text)">
+    <a href="#main-content" class="skip-link">
+      {es.app.skipToMain}
+    </a>
+    
+    <div class="grid min-h-screen min-w-0 grid-cols-1 md:grid-cols-[16rem_1fr] lg:grid-cols-[18rem_1fr]">
+      <aside
+        transition:persist="app-sidebar"
+        transition:animate="none"
+        class="hidden h-screen overflow-y-auto border-r border-(--color-border) bg-(--color-bg-surface) md:sticky md:top-0 md:block"
+      >
+        <AppSidebar />
+      </aside>
+
+      <header
+        transition:persist="app-mobile-nav"
+        transition:animate="none"
+        class="mobile-bar"
+      >
+        <a href="/" class="wordmark mobile-bar__brand">Gong Cha</a>
+        <details class="mobile-nav">
+          <summary class="mobile-nav__toggle" aria-label={es.a11y.menu}>
+            <span class="burger" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+          </summary>
+          <div class="mobile-nav__panel">
+            <AppSidebar showBrand={false} />
+          </div>
+        </details>
+      </header>
+      
+      <main
+        id="main-content"
+        transition:name="workspace"
+        transition:animate="none"
+        class="min-w-0 max-w-full overflow-x-clip bg-(--color-bg-warm) px-4 py-8 sm:px-6 md:px-10 md:py-12 lg:px-12"
+      >
+        <slot />
+      </main>
+    </div>
+    <div
+      id="toast-root"
+      transition:persist="app-toasts"
+      transition:animate="none"
+      class="toast-root"
+    ></div>
+    <ToastHost client:load />
+    <script is:inline>
+      if (!window.__gongchaLayoutInit) {
+        window.__gongchaLayoutInit = true;
+        function navIsActive(href, path) {
+          return href === '/' ? path === '/' : path === href || path.startsWith(href + '/');
+        }
+        function syncPersistedNav() {
+          const path = location.pathname;
+          document.querySelectorAll('[data-nav-path]').forEach((link) => {
+            const href = link.getAttribute('data-nav-path') || '';
+            const active = navIsActive(href, path);
+            link.classList.toggle('is-active', active);
+            if (active) link.setAttribute('aria-current', 'page');
+            else link.removeAttribute('aria-current');
+          });
+        }
+        function persistStylesheets() {
+          document.querySelectorAll('link[rel="stylesheet"], style').forEach((node, index) => {
+            if (node.hasAttribute('data-astro-transition-persist')) return;
+            const key = node.getAttribute('href')
+              || node.getAttribute('data-vite-dev-id')
+              || 'css-' + index;
+            node.setAttribute('data-astro-transition-persist', key);
+          });
+        }
+        function carryStyles(event) {
+          const nextHead = event.newDocument.head;
+          document.querySelectorAll('link[rel="stylesheet"], style').forEach((node) => {
+            const viteId = node.getAttribute('data-vite-dev-id');
+            const href = node.getAttribute('href');
+            const persist = node.getAttribute('data-astro-transition-persist');
+            if (viteId && nextHead.querySelector('[data-vite-dev-id="' + viteId + '"]')) return;
+            if (href && nextHead.querySelector('link[href="' + href + '"]')) return;
+            if (persist && nextHead.querySelector('[data-astro-transition-persist="' + persist + '"]')) return;
+            nextHead.appendChild(node.cloneNode(true));
+          });
+        }
+        function finishTransition() {
+          document.documentElement.removeAttribute('data-astro-transition');
+          document.documentElement.removeAttribute('data-astro-transition-fallback');
+          document.querySelectorAll('.mobile-nav[open]').forEach((node) => {
+            node.removeAttribute('open');
+          });
+        }
+        document.addEventListener('click', (event) => {
+          const target = event.target;
+          if (!(target instanceof Element)) return;
+          if (target.closest('.mobile-nav a')) {
+            document.querySelectorAll('.mobile-nav[open]').forEach((node) => {
+              node.removeAttribute('open');
+            });
+          }
+        });
+        document.addEventListener('astro:page-load', syncPersistedNav);
+        document.addEventListener('astro:page-load', persistStylesheets);
+        document.addEventListener('astro:page-load', finishTransition);
+        document.addEventListener('astro:before-swap', carryStyles);
+      }
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  /* Kill every view-transition snapshot animation so navigation is an instant
+     DOM swap with zero cross-fade. The universal `*` catch-all nulls the
+     browser UA default cross-fade for every named pair (root, workspace, and
+     the persisted sidebar/mobile-nav/toasts scopes) regardless of naming.
+     transition:animate="none" only tells Astro to inject nothing; the UA
+     default still plays unless we explicitly null it here. */
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation: none;
+  }
+
+  ::view-transition {
+    pointer-events: none;
+  }
+
+  .toast-root {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: min(22rem, calc(100vw - 2rem));
+    pointer-events: none;
+  }
+
+  .toast-viewport {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  /* Ported from Park UI `toast` recipe. */
+  .toast-item {
+    pointer-events: auto;
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    width: 100%;
+    padding: 1rem;
+    padding-right: 2.75rem;
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    overflow-wrap: anywhere;
+  }
+
+  .toast-item--success .toast-item__icon {
+    color: var(--color-success);
+  }
+
+  .toast-item--error .toast-item__icon {
+    color: var(--color-error);
+  }
+
+  .toast-item__icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+  }
+
+  .toast-item__copy {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .toast-item__title {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text);
+  }
+
+  .toast-item__desc {
+    margin: 0.125rem 0 0;
+    font-size: 0.875rem;
+    line-height: 1.45;
+    color: var(--color-text-muted);
+  }
+
+  .toast-item__close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 1.75rem;
+    height: 1.75rem;
+    display: grid;
+    place-items: center;
+    border: 0;
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+  }
+
+  .toast-item__close:hover {
+    background: var(--color-bg-hover);
+    color: var(--color-text);
+  }
+
+  .mobile-bar {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 4rem;
+    padding: 0 0.75rem 0 1rem;
+    background: var(--color-bg-surface);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  /* Unlayered CSS beats Tailwind's layered `md:hidden`, so hide here. */
+  @media (min-width: 768px) {
+    .mobile-bar {
+      display: none;
+    }
+  }
+
+  .mobile-bar__brand {
+    color: var(--color-primary);
+    font-size: 1.5rem;
+    line-height: 1;
+    text-decoration: none;
+  }
+
+  .mobile-nav__toggle {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin: 0;
+    color: var(--color-text);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .mobile-nav__toggle::-webkit-details-marker,
+  .mobile-nav__toggle::marker {
+    display: none;
+    content: none;
+  }
+
+  .burger {
+    position: relative;
+    display: block;
+    width: 1.25rem;
+    height: 0.875rem;
+  }
+
+  .burger span {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1.5px;
+    background: currentColor;
+    transition:
+      transform var(--duration-fast) var(--ease-out),
+      opacity var(--duration-fast) var(--ease-out),
+      top var(--duration-fast) var(--ease-out);
+  }
+
+  .burger span:nth-child(1) { top: 0; }
+  .burger span:nth-child(2) { top: 50%; margin-top: -0.75px; }
+  .burger span:nth-child(3) { bottom: 0; }
+
+  .mobile-nav[open] .burger span:nth-child(1) {
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+  }
+
+  .mobile-nav[open] .burger span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .mobile-nav[open] .burger span:nth-child(3) {
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%) rotate(-45deg);
+  }
+
+  .mobile-nav__panel {
+    position: fixed;
+    inset: 4rem 0 0;
+    z-index: 199;
+    overflow-y: auto;
+    background: var(--color-bg-surface);
+    border-top: 1px solid var(--color-border);
+  }
+
+  body:has(.mobile-nav[open]) {
+    overflow: hidden;
+  }
+</style>

@@ -130,7 +130,31 @@ func (r *RecipeRepository) LoadBOM(ctx context.Context) (*recipe.BOM, error) {
 	if err != nil {
 		return nil, err
 	}
-	return recipe.NewBOM(recipes, comps), nil
+	bom := recipe.NewBOM(recipes, comps)
+	types, err := r.productTypes(ctx)
+	if err != nil {
+		return nil, err
+	}
+	bom.SetTypes(types)
+	return bom, nil
+}
+
+func (r *RecipeRepository) productTypes(ctx context.Context) (map[string]domain.ProductType, error) {
+	rows, err := r.db.Query(ctx, `SELECT product_id, type FROM products`)
+	if err != nil {
+		return nil, mapError(err)
+	}
+	defer rows.Close()
+	out := make(map[string]domain.ProductType)
+	for rows.Next() {
+		var id string
+		var t domain.ProductType
+		if err := rows.Scan(&id, &t); err != nil {
+			return nil, mapError(err)
+		}
+		out[id] = t
+	}
+	return out, mapError(rows.Err())
 }
 
 // Create inserts a recipe and its components after rejecting dependency cycles.

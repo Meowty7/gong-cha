@@ -14,6 +14,8 @@ type BOM struct {
 	recipeByResult map[string]domain.Recipe
 	// resultProductID -> components
 	componentsByResult map[string][]domain.RecipeComponent
+	// productID -> type; nil means "treat missing recipes as raw leaves"
+	types map[string]domain.ProductType
 }
 
 // NewBOM indexes recipes and their components for calculation.
@@ -33,6 +35,12 @@ func NewBOM(recipes []domain.Recipe, components []domain.RecipeComponent) *BOM {
 		b.componentsByResult[result] = append(b.componentsByResult[result], c)
 	}
 	return b
+}
+
+// SetTypes tells the engine which products must have a recipe (semi-finished
+// and finished). Without types, a missing recipe is treated as a raw leaf.
+func (b *BOM) SetTypes(types map[string]domain.ProductType) {
+	b.types = types
 }
 
 // Requirement is one aggregated material need.
@@ -56,6 +64,7 @@ type Inventory map[string]decimal.Decimal
 type Capacity struct {
 	MaxUnits          decimal.Decimal
 	LimitingComponent string
+	Consumed          []Requirement
 	Leftovers         []Requirement
 }
 
@@ -95,6 +104,9 @@ func (b *BOM) expand(productID string, quantity decimal.Decimal, useDirect map[s
 	}
 	raw := make(map[string]Requirement)
 	var incomplete []string
+	if len(b.componentsByResult[productID]) == 0 {
+		markIncomplete(&incomplete, productID)
+	}
 	for _, c := range b.componentsByResult[productID] {
 		need := c.Quantity.Mul(factor)
 		if err := b.expandInto(c.ComponentProductID, need, c.Unit, raw, &incomplete, map[string]bool{}, useDirect); err != nil {
@@ -122,6 +134,9 @@ func (b *BOM) expandInto(productID string, need decimal.Decimal, unit domain.Uni
 	}
 	rec, hasRecipe := b.recipeByResult[productID]
 	if !hasRecipe {
+		if b.needsRecipe(productID) {
+			markIncomplete(incomplete, productID)
+		}
 		acc, ok := raw[productID]
 		if !ok {
 			acc = Requirement{ProductID: productID, Unit: unit}
@@ -130,10 +145,14 @@ func (b *BOM) expandInto(productID string, need decimal.Decimal, unit domain.Uni
 		raw[productID] = acc
 		return nil
 	}
+	if len(b.componentsByResult[productID]) == 0 {
+		markIncomplete(incomplete, productID)
+	}
 	if seen[productID] {
-		return nil // guard against re-expansion loops (cycles rejected earlier)
+		return fmt.Errorf("%w: cycle at %s", domain.ErrCycle, productID)
 	}
 	seen[productID] = true
+	defer delete(seen, productID)
 	factor := need.Div(rec.BatchYield)
 	for _, c := range b.componentsByResult[productID] {
 		childNeed := c.Quantity.Mul(factor)
@@ -142,6 +161,23 @@ func (b *BOM) expandInto(productID string, need decimal.Decimal, unit domain.Uni
 		}
 	}
 	return nil
+}
+
+func (b *BOM) needsRecipe(productID string) bool {
+	if b.types == nil {
+		return false
+	}
+	t := b.types[productID]
+	return t == domain.SemiFinished || t == domain.FinishedProduct
+}
+
+func markIncomplete(list *[]string, id string) {
+	for _, existing := range *list {
+		if existing == id {
+			return
+		}
+	}
+	*list = append(*list, id)
 }
 
 func flatten(raw map[string]Requirement) []Requirement {
@@ -175,41 +211,31 @@ func (b *BOM) MaxProduction(productID string, inv Inventory, useDirect map[strin
 	}
 	maxUnits := decimal.Zero
 	limiting := ""
+	first := true
 	for _, r := range perUnit {
 		if r.Quantity.IsZero() {
-			return Capacity{MaxUnits: decimal.Zero, LimitingComponent: r.ProductID}, nil
+			continue
 		}
 		avail := inv[r.ProductID]
-		if avail.IsZero() && !r.Quantity.IsZero() {
-			return Capacity{MaxUnits: decimal.Zero, LimitingComponent: r.ProductID}, nil
-		}
 		possible := avail.Div(r.Quantity).Floor()
-		if maxUnits.IsZero() || possible.LessThan(maxUnits) {
+		if first || possible.LessThan(maxUnits) {
 			maxUnits = possible
 			limiting = r.ProductID
+			first = false
 		} else if possible.Equal(maxUnits) && (limiting == "" || r.ProductID < limiting) {
-			// Deterministic tie: pick the lexicographically smallest id.
 			limiting = r.ProductID
 		}
 	}
+	consumed := make([]Requirement, 0, len(perUnit))
 	leftovers := make([]Requirement, 0, len(perUnit))
 	for _, r := range perUnit {
-		left := inv[r.ProductID].Sub(maxUnits.Mul(r.Quantity))
+		used := maxUnits.Mul(r.Quantity)
+		consumed = append(consumed, Requirement{ProductID: r.ProductID, Quantity: used, Unit: r.Unit})
+		left := inv[r.ProductID].Sub(used)
 		if left.IsNegative() {
 			left = decimal.Zero
 		}
 		leftovers = append(leftovers, Requirement{ProductID: r.ProductID, Quantity: left, Unit: r.Unit})
 	}
-	return Capacity{MaxUnits: maxUnits, LimitingComponent: limiting, Leftovers: leftovers}, nil
-}
-
-func joinIDs(ids []string) string {
-	out := ""
-	for i, id := range ids {
-		if i > 0 {
-			out += ", "
-		}
-		out += id
-	}
-	return out
+	return Capacity{MaxUnits: maxUnits, LimitingComponent: limiting, Consumed: consumed, Leftovers: leftovers}, nil
 }

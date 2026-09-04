@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gongcha-cup/backend/internal/domain"
@@ -48,6 +49,7 @@ func (s *Server) registerCalculationRoutes(r chi.Router) {
 	r.Post("/api/v1/calculate/direct", h.directCapacity)
 	r.Post("/api/v1/calculate/inverse", h.inverseRequirements)
 	r.Post("/api/v1/calculate/event", h.eventPlan)
+	r.Get("/api/v1/calculations", h.listRuns)
 	r.Post("/api/v1/production/simulate", h.simulate)
 	r.Post("/api/v1/production/confirm", h.confirm)
 	r.Get("/api/v1/inventory/{productId}/history", h.inventoryHistory)
@@ -62,7 +64,9 @@ type directRequest struct {
 type capacityResponse struct {
 	MaxUnits          string           `json:"max_units"`
 	LimitingComponent string           `json:"limiting_component"`
+	Consumed          []requirementDTO `json:"consumed"`
 	Leftovers         []requirementDTO `json:"leftovers"`
+	CalculatedAt      string           `json:"calculated_at"`
 }
 
 type requirementDTO struct {
@@ -99,11 +103,16 @@ func (h *CalculationHandler) directCapacity(w http.ResponseWriter, r *http.Reque
 		writeDomainError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, capacityResponse{
+	at := nowUTC()
+	resp := capacityResponse{
 		MaxUnits:          cap.MaxUnits.String(),
 		LimitingComponent: cap.LimitingComponent,
+		Consumed:          toRequirementDTOs(cap.Consumed),
 		Leftovers:         toRequirementDTOs(cap.Leftovers),
-	})
+		CalculatedAt:      at,
+	}
+	h.recordRun(r.Context(), "direct_capacity", req, resp)
+	writeJSON(w, http.StatusOK, resp)
 }
 
 type inverseRequest struct {
@@ -113,6 +122,26 @@ type inverseRequest struct {
 
 type expansionResponse struct {
 	Immediate    []requirementDTO `json:"immediate"`
+	RawMaterials []requirementDTO `json:"raw_materials"`
+	Incomplete   []string         `json:"incomplete,omitempty"`
+	PerLine      []lineExpansion  `json:"per_line,omitempty"`
+	Shortages    []shortageDTO    `json:"shortages,omitempty"`
+	CalculatedAt string           `json:"calculated_at,omitempty"`
+}
+
+type shortageDTO struct {
+	ProductID string `json:"product_id"`
+	Need      string `json:"need"`
+	Have      string `json:"have"`
+	Shortage  string `json:"shortage"`
+	Unit      string `json:"unit"`
+}
+
+// lineExpansion is the per-demand-line breakdown returned by /calculate/event.
+type lineExpansion struct {
+	ProductID    string           `json:"product_id"`
+	Quantity     string           `json:"quantity"`
+	Immediate    []requirementDTO `json:"immediate,omitempty"`
 	RawMaterials []requirementDTO `json:"raw_materials"`
 	Incomplete   []string         `json:"incomplete,omitempty"`
 }
@@ -146,11 +175,14 @@ func (h *CalculationHandler) inverseRequirements(w http.ResponseWriter, r *http.
 		writeDomainError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, expansionResponse{
+	resp := expansionResponse{
 		Immediate:    toRequirementDTOs(exp.Immediate),
 		RawMaterials: toRequirementDTOs(exp.RawMaterials),
 		Incomplete:   exp.Incomplete,
-	})
+		CalculatedAt: nowUTC(),
+	}
+	h.recordRun(r.Context(), "inverse_requirements", req, resp)
+	writeJSON(w, http.StatusOK, resp)
 }
 
 type eventDemandDTO struct {
@@ -188,9 +220,34 @@ func (h *CalculationHandler) eventPlan(w http.ResponseWriter, r *http.Request) {
 		writeDomainError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, expansionResponse{
-		RawMaterials: toRequirementDTOs(cons.RawMaterials),
-	})
+	lines := make([]lineExpansion, 0, len(cons.PerLine))
+	var incomplete []string
+	for i, exp := range cons.PerLine {
+		d := demands[i]
+		lines = append(lines, lineExpansion{
+			ProductID:    d.ProductID,
+			Quantity:     d.RequestedQuantity.String(),
+			Immediate:    toRequirementDTOs(exp.Immediate),
+			RawMaterials: toRequirementDTOs(exp.RawMaterials),
+			Incomplete:   exp.Incomplete,
+		})
+		incomplete = append(incomplete, exp.Incomplete...)
+	}
+	inv, err := h.inv.Snapshot(r.Context())
+	if err != nil {
+		writeDomainError(w, err)
+		return
+	}
+	rawDTOs := toRequirementDTOs(cons.RawMaterials)
+	resp := expansionResponse{
+		RawMaterials: rawDTOs,
+		PerLine:      lines,
+		Incomplete:   incomplete,
+		Shortages:    toShortageDTOs(recipe.CompareInventory(cons.RawMaterials, inv)),
+		CalculatedAt: nowUTC(),
+	}
+	h.recordRun(r.Context(), "event_planning", req, resp)
+	writeJSON(w, http.StatusOK, resp)
 }
 
 func (h *CalculationHandler) resolveDemands(ctx context.Context, req eventRequest) ([]domain.EventDemand, error) {
@@ -225,12 +282,23 @@ type simulateRequest struct {
 }
 
 func (h *CalculationHandler) simulate(w http.ResponseWriter, r *http.Request) {
-	res, err := h.runSim(r, false)
+	var req simulateRequest
+	if err := decodeJSON(r, &req); err != nil {
+		writeDomainError(w, errString(err.Error()))
+		return
+	}
+	res, err := h.simulateReq(r.Context(), req)
 	if err != nil {
 		writeDomainError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, productionResponse{Consumed: toRequirementDTOs(res.Consumed), Leftovers: toRequirementDTOs(res.Leftovers)})
+	resp := productionResponse{
+		Consumed:     toRequirementDTOs(res.Consumed),
+		Leftovers:    toRequirementDTOs(res.Leftovers),
+		CalculatedAt: nowUTC(),
+	}
+	h.recordRun(r.Context(), "simulation", req, resp)
+	writeJSON(w, http.StatusOK, resp)
 }
 
 type confirmRequest struct {
@@ -295,20 +363,20 @@ func (h *CalculationHandler) confirm(w http.ResponseWriter, r *http.Request) {
 		writeDomainError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, productionResponse{Consumed: toRequirementDTOs(res.Consumed), Leftovers: toRequirementDTOs(res.Leftovers)})
+	writeJSON(w, http.StatusOK, productionResponse{
+		Consumed:     toRequirementDTOs(res.Consumed),
+		Leftovers:    toRequirementDTOs(res.Leftovers),
+		CalculatedAt: nowUTC(),
+	})
 }
 
 type productionResponse struct {
-	Consumed  []requirementDTO `json:"consumed"`
-	Leftovers []requirementDTO `json:"leftovers"`
+	Consumed     []requirementDTO `json:"consumed"`
+	Leftovers    []requirementDTO `json:"leftovers"`
+	CalculatedAt string           `json:"calculated_at,omitempty"`
 }
 
-// runSim is the shared simulate path (no writes).
-func (h *CalculationHandler) runSim(r *http.Request, isConfirm bool) (inventory.Result, error) {
-	var req simulateRequest
-	if err := decodeJSON(r, &req); err != nil {
-		return inventory.Result{}, errString(err.Error())
-	}
+func (h *CalculationHandler) simulateReq(ctx context.Context, req simulateRequest) (inventory.Result, error) {
 	if strings.TrimSpace(req.ProductID) == "" {
 		return inventory.Result{}, errString("product_id is required")
 	}
@@ -319,15 +387,56 @@ func (h *CalculationHandler) runSim(r *http.Request, isConfirm bool) (inventory.
 	if !qty.IsPositive() {
 		return inventory.Result{}, errString("quantity must be positive")
 	}
-	bom, err := h.bom.LoadBOM(r.Context())
+	bom, err := h.bom.LoadBOM(ctx)
 	if err != nil {
 		return inventory.Result{}, err
 	}
-	inv, err := h.inv.Snapshot(r.Context())
+	inv, err := h.inv.Snapshot(ctx)
 	if err != nil {
 		return inventory.Result{}, err
 	}
 	return inventory.Simulate(bom, req.ProductID, qty, inv, toSet(req.UseDirect))
+}
+
+func (h *CalculationHandler) listRuns(w http.ResponseWriter, r *http.Request) {
+	if h.pool == nil {
+		writeJSON(w, http.StatusOK, []runDTO{})
+		return
+	}
+	rows, err := h.pool.Query(r.Context(), `
+		SELECT run_id, run_type, request, result, created_at
+		FROM calculation_runs
+		ORDER BY created_at DESC
+		LIMIT 50`)
+	if err != nil {
+		writeDomainError(w, err)
+		return
+	}
+	defer rows.Close()
+	out := make([]runDTO, 0)
+	for rows.Next() {
+		var row runDTO
+		var created time.Time
+		if err := rows.Scan(&row.RunID, &row.RunType, &row.Request, &row.Result, &created); err != nil {
+			writeDomainError(w, err)
+			return
+		}
+		row.CreatedAt = created.UTC().Format(time.RFC3339)
+		out = append(out, row)
+	}
+	if err := rows.Err(); err != nil {
+		writeDomainError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, out)
+}
+
+type runDTO struct {
+	RunID     int64           `json:"run_id"`
+	RunType   string          `json:"run_type"`
+	Request   json.RawMessage `json:"request"`
+	Result    json.RawMessage `json:"result"`
+	CreatedAt string          `json:"created_at"`
 }
 
 func (h *CalculationHandler) inventoryHistory(w http.ResponseWriter, r *http.Request) {
@@ -389,7 +498,9 @@ func parseInventory(m map[string]string) recipe.Inventory {
 func toRequirementDTOs(reqs []recipe.Requirement) []requirementDTO {
 	out := make([]requirementDTO, len(reqs))
 	for i, r := range reqs {
-		out[i] = requirementDTO{ProductID: r.ProductID, Quantity: r.Quantity.String(), Unit: string(r.Unit)}
+		// ponytail: decimal.Div defaults to 16 digits; round to 4 to avoid
+		// noise like 693.3333333333337 in API output and DB writes.
+		out[i] = requirementDTO{ProductID: r.ProductID, Quantity: r.Quantity.Round(4).String(), Unit: string(r.Unit)}
 	}
 	return out
 }
@@ -397,4 +508,39 @@ func toRequirementDTOs(reqs []recipe.Requirement) []requirementDTO {
 func requestHash(req confirmRequest) string {
 	b, _ := json.Marshal(req)
 	return string(b)
+}
+
+func nowUTC() string {
+	return time.Now().UTC().Format(time.RFC3339)
+}
+
+func toShortageDTOs(rows []recipe.Shortage) []shortageDTO {
+	out := make([]shortageDTO, len(rows))
+	for i, s := range rows {
+		out[i] = shortageDTO{
+			ProductID: s.ProductID,
+			Need:      s.Need.Round(4).String(),
+			Have:      s.Have.Round(4).String(),
+			Shortage:  s.Shortage.Round(4).String(),
+			Unit:      string(s.Unit),
+		}
+	}
+	return out
+}
+
+func (h *CalculationHandler) recordRun(ctx context.Context, runType string, req, res any) {
+	if h.pool == nil {
+		return
+	}
+	reqJSON, err := json.Marshal(req)
+	if err != nil {
+		return
+	}
+	resJSON, err := json.Marshal(res)
+	if err != nil {
+		return
+	}
+	_, _ = h.pool.Exec(ctx, `
+		INSERT INTO calculation_runs (run_type, request, result)
+		VALUES ($1, $2, $3)`, runType, reqJSON, resJSON)
 }

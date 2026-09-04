@@ -46,16 +46,21 @@ func mapError(err error) error {
 	if errors.As(err, &pgErr) {
 		switch pgErr.Code {
 		case "23505": // unique_violation
-			return fmt.Errorf("%w: %s", domain.ErrConflict, pgErr.Message)
-		case "23503": // foreign_key_violation
-			return fmt.Errorf("%w: %s", domain.ErrConflict, pgErr.Message)
+			return fmt.Errorf("%w: resource already exists", domain.ErrConflict)
+		case "23503", "23001": // foreign_key_violation, restrict_violation
+			return fmt.Errorf("%w: referenced resource is missing or in use", domain.ErrConflict)
 		case "23514": // check_violation
-			return fmt.Errorf("%w: %s", domain.ErrValidation, pgErr.Message)
+			return fmt.Errorf("%w: value failed a check constraint", domain.ErrValidation)
 		case "23502": // not_null_violation
-			return fmt.Errorf("%w: %s", domain.ErrValidation, pgErr.Message)
+			return fmt.Errorf("%w: required field is missing", domain.ErrValidation)
 		case "22P02", "22P03": // invalid_text_representation
-			return fmt.Errorf("%w: %s", domain.ErrValidation, pgErr.Message)
+			return fmt.Errorf("%w: invalid value", domain.ErrValidation)
 		}
+		if len(pgErr.Code) >= 2 && pgErr.Code[:2] == "23" {
+			return fmt.Errorf("%w: integrity constraint", domain.ErrConflict)
+		}
+		// Keep the driver error in the chain for logs; HTTP must not print it.
+		return fmt.Errorf("database error: %w", err)
 	}
 	return err
 }

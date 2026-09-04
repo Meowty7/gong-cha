@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gongcha-cup/backend/internal/domain"
@@ -168,6 +170,10 @@ func TestCreateProduct_Conflict(t *testing.T) {
 	if rec.Code != http.StatusConflict {
 		t.Fatalf("expected 409 for duplicate, got %d", rec.Code)
 	}
+	body := rec.Body.String()
+	if strings.Contains(body, "duplicate key") || strings.Contains(body, "products_pkey") {
+		t.Fatalf("leaked postgres: %s", body)
+	}
 }
 
 func TestGetProduct_NotFound(t *testing.T) {
@@ -185,6 +191,20 @@ func TestUpdateProduct_NotFound(t *testing.T) {
 	})
 	if rec.Code != http.StatusNotFound {
 		t.Fatalf("expected 404, got %d", rec.Code)
+	}
+}
+
+func TestDeleteProduct_InUse(t *testing.T) {
+	ps := newFakeProductStore(domain.Product{ID: "MP001", Name: "Azucar", Type: "raw_material", Unit: "g"})
+	ps.err = fmt.Errorf("%w: referenced resource is missing or in use", domain.ErrConflict)
+	s := newCatalogServer(ps, newFakeInventoryStore())
+	rec := doJSON(t, s, http.MethodDelete, "/api/v1/products/MP001", nil)
+	if rec.Code != http.StatusConflict {
+		t.Fatalf("expected 409 for in-use delete, got %d: %s", rec.Code, rec.Body)
+	}
+	body := rec.Body.String()
+	if strings.Contains(body, "violates") || strings.Contains(body, "fkey") {
+		t.Fatalf("leaked postgres: %s", body)
 	}
 }
 
@@ -219,7 +239,8 @@ func TestUpsertInventory_NegativeQuantity(t *testing.T) {
 
 func TestUpsertInventory_Success(t *testing.T) {
 	inv := &fakeInventoryStore{balances: map[string]domain.InventoryBalance{}}
-	s := newCatalogServer(newFakeProductStore(), inv)
+	ps := newFakeProductStore(domain.Product{ID: "MP001", Name: "Azucar", Type: domain.RawMaterial, Unit: domain.Gram})
+	s := newCatalogServer(ps, inv)
 	rec := doJSON(t, s, http.MethodPut, "/api/v1/inventory/MP001", upsertInventoryDTO{
 		Quantity: "100", Unit: "g",
 	})
@@ -229,6 +250,27 @@ func TestUpsertInventory_Success(t *testing.T) {
 	got := inv.balances["MP001"]
 	if !got.Quantity.Equal(decimal.NewFromInt(100)) {
 		t.Fatalf("expected quantity 100, got %s", got.Quantity)
+	}
+}
+
+func TestUpsertInventory_UnitMismatch(t *testing.T) {
+	ps := newFakeProductStore(domain.Product{ID: "MP001", Name: "Azucar", Type: domain.RawMaterial, Unit: domain.Gram})
+	s := newCatalogServer(ps, newFakeInventoryStore())
+	rec := doJSON(t, s, http.MethodPut, "/api/v1/inventory/MP001", upsertInventoryDTO{
+		Quantity: "100", Unit: "ml",
+	})
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 for unit mismatch, got %d: %s", rec.Code, rec.Body)
+	}
+}
+
+func TestUpsertInventory_UnknownProduct(t *testing.T) {
+	s := newCatalogServer(newFakeProductStore(), newFakeInventoryStore())
+	rec := doJSON(t, s, http.MethodPut, "/api/v1/inventory/NOPE", upsertInventoryDTO{
+		Quantity: "100", Unit: "g",
+	})
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("expected 404 for missing product, got %d: %s", rec.Code, rec.Body)
 	}
 }
 

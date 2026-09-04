@@ -3,6 +3,7 @@ package store_test
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/gongcha-cup/backend/internal/domain"
@@ -26,9 +27,11 @@ func TestProductRepository_CRUD(t *testing.T) {
 	if err := repo.Create(ctx, p); err != nil {
 		t.Fatalf("create: %v", err)
 	}
-	// Duplicate -> conflict
+	// Duplicate -> conflict, without Postgres text in the error string.
 	if err := repo.Create(ctx, p); !isDomain(err, domain.ErrConflict) {
 		t.Fatalf("expected conflict, got %v", err)
+	} else if strings.Contains(err.Error(), "duplicate key") || strings.Contains(err.Error(), "products_pkey") {
+		t.Fatalf("leaked postgres: %v", err)
 	}
 	// Get
 	got, err := repo.Get(ctx, p.ID)

@@ -186,14 +186,24 @@ func (h *CatalogHandler) upsertInventory(w http.ResponseWriter, r *http.Request)
 		writeError(w, http.StatusBadRequest, "validation_error", err.Error())
 		return
 	}
+	pid := chi.URLParam(r, "productId")
+	product, err := h.products.Get(r.Context(), pid)
+	if err != nil {
+		writeDomainError(w, err)
+		return
+	}
+	if unit != product.Unit {
+		writeError(w, http.StatusBadRequest, "validation_error", "unit must match catalog unit")
+		return
+	}
 	loc := strings.TrimSpace(dto.Location)
 	if loc == "" {
 		loc = "Bodega principal"
 	}
 	b := domain.InventoryBalance{
-		ProductID: chi.URLParam(r, "productId"),
+		ProductID: pid,
 		Quantity:  qty,
-		Unit:      unit,
+		Unit:      product.Unit,
 		Location:  loc,
 	}
 	if err := h.inventory.Upsert(r.Context(), b); err != nil {
@@ -250,20 +260,3 @@ func decodeJSON(r *http.Request, v any) error {
 	return dec.Decode(v)
 }
 
-// writeDomainError maps a domain error to an HTTP error envelope.
-func writeDomainError(w http.ResponseWriter, err error) {
-	switch {
-	case errors.Is(err, domain.ErrNotFound):
-		writeError(w, http.StatusNotFound, "not_found", err.Error())
-	case errors.Is(err, domain.ErrConflict):
-		writeError(w, http.StatusConflict, "conflict", err.Error())
-	case errors.Is(err, domain.ErrValidation):
-		writeError(w, http.StatusBadRequest, "validation_error", err.Error())
-	case errors.Is(err, domain.ErrInsufficient):
-		writeError(w, http.StatusUnprocessableEntity, "insufficient_inventory", err.Error())
-	case errors.Is(err, domain.ErrCycle):
-		writeError(w, http.StatusUnprocessableEntity, "dependency_cycle", err.Error())
-	default:
-		writeError(w, http.StatusInternalServerError, "internal_error", err.Error())
-	}
-}

@@ -1,17 +1,13 @@
 ---
-
+import AppLayout from '../layouts/AppLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import DashboardWorkspace from '../components/DashboardWorkspace.vue';
+import { es } from '../lib/i18n/es';
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<AppLayout title={es.dashboard.title} description={es.dashboard.description}>
+  <div class="mx-auto max-w-7xl">
+    <PageHeader title={es.dashboard.title} />
+    <DashboardWorkspace client:load />
+  </div>
+</AppLayout>

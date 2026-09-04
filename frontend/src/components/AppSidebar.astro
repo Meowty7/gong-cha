@@ -1,0 +1,104 @@
+---
+import { es } from '../lib/i18n/es';
+
+interface Props {
+  showBrand?: boolean;
+}
+
+const { showBrand = true } = Astro.props;
+const currentPath = Astro.url.pathname;
+
+const navItems = [
+  { href: '/', label: es.nav.dashboard, icon: 'dashboard' },
+  { href: '/catalog', label: es.nav.catalog, icon: 'catalog' },
+  { href: '/inventory', label: es.nav.inventory, icon: 'inventory' },
+  { href: '/recipes', label: es.nav.recipes, icon: 'recipes' },
+  { href: '/calculations', label: es.nav.calculations, icon: 'calculations' },
+  { href: '/events', label: es.nav.events, icon: 'events' },
+  { href: '/production', label: es.nav.production, icon: 'production' },
+];
+
+const icons: Record<string, string> = {
+  dashboard:
+    '<rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1"/><rect x="9" y="1.5" width="5.5" height="5.5" rx="1"/><rect x="1.5" y="9" width="5.5" height="5.5" rx="1"/><rect x="9" y="9" width="5.5" height="5.5" rx="1"/>',
+  catalog:
+    '<rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M2 6.5h12M6.5 6.5v7.5"/>',
+  inventory:
+    '<path d="M2.5 5.5 8 2.75 13.5 5.5 8 8.25Z"/><path d="M2.5 5.5v5.25L8 13.5l5.5-2.75V5.5"/><path d="M8 8.25V13.5"/>',
+  recipes: '<path d="M3 4h10M3 8h10M3 12h7"/>',
+  calculations: '<rect x="3" y="2" width="10" height="12" rx="1.5"/><path d="M6 5.5h4M6 8.5h4M6 11.5h2"/>',
+  events:
+    '<rect x="2" y="3.5" width="12" height="10.5" rx="1.5"/><path d="M2 7h12M5.5 2v3M10.5 2v3"/>',
+  production:
+    '<circle cx="8" cy="8" r="2.25"/><path d="M8 2.75v1.5M8 11.75v1.5M2.75 8h1.5M11.75 8h1.5M4.05 4.05l1.06 1.06M10.89 10.89l1.06 1.06M4.05 11.95l1.06-1.06M10.89 5.11l1.06-1.06"/>',
+};
+
+function isActive(href: string): boolean {
+  if (href === '/') {
+    return currentPath === '/';
+  }
+  return currentPath.startsWith(href);
+}
+---
+
+<nav class:list={['flex min-h-full flex-col', showBrand ? 'py-5' : 'py-2']} aria-label="Navegación principal">
+  {showBrand && (
+    <div class="px-5 pb-5">
+      <p class="wordmark m-0 text-[1.65rem] leading-none">
+        <a href="/" class="text-(--color-primary) no-underline transition hover:text-(--color-primary-dark)">
+          Gong Cha
+        </a>
+      </p>
+    </div>
+  )}
+
+  <ul class="m-0 flex list-none flex-col gap-1 px-3">
+    {navItems.map((item) => (
+      <li>
+        <a
+          href={item.href}
+          data-nav-path={item.href}
+          class:list={[
+            'nav-item flex items-center gap-3 rounded-[var(--radius-pill)] px-3 py-2.5 text-[0.9375rem] font-medium no-underline',
+            isActive(item.href) && 'is-active',
+          ]}
+          aria-current={isActive(item.href) ? 'page' : undefined}
+        >
+          <svg
+            class="size-4 shrink-0"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            set:html={icons[item.icon]}
+          />
+          <span class="flex-1">{item.label}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<style>
+  .nav-item {
+    color: var(--color-text);
+    transition:
+      background-color var(--duration-fast) var(--ease-out),
+      color var(--duration-fast) var(--ease-out);
+  }
+  .nav-item:hover {
+    background: var(--color-bg-hover);
+    color: var(--color-primary);
+  }
+  .nav-item.is-active,
+  .nav-item.is-active:hover {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+</style>
