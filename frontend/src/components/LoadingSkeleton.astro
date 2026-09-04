@@ -1,0 +1,95 @@
+---
+/**
+ * LoadingSkeleton - Stable loading placeholder without layout shift
+ */
+
+interface Props {
+  /** Number of skeleton items to show */
+  count?: number;
+  /** Variant: card, table-row, or inline */
+  variant?: 'card' | 'table-row' | 'inline';
+  /** Height of skeleton (for custom variants) */
+  height?: string;
+}
+
+const { count = 3, variant = 'card', height } = Astro.props;
+---
+
+<div class={`loading-skeleton loading-skeleton--${variant}`} aria-live="polite" aria-busy="true">
+  {Array.from({ length: count }).map(() => (
+    <div class="loading-skeleton__item" style={height ? `height: ${height}` : undefined}>
+      <div class="loading-skeleton__shimmer"></div>
+    </div>
+  ))}
+</div>
+
+<style>
+.loading-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.loading-skeleton--card {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+
+.loading-skeleton--inline {
+  flex-direction: row;
+  align-items: center;
+}
+
+.loading-skeleton__item {
+  position: relative;
+  background: var(--color-bg-warm);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.loading-skeleton--card .loading-skeleton__item {
+  height: 320px;
+}
+
+.loading-skeleton--table-row .loading-skeleton__item {
+  height: 60px;
+}
+
+.loading-skeleton--inline .loading-skeleton__item {
+  height: 1.5rem;
+  width: 100px;
+}
+
+.loading-skeleton__shimmer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    transparent 100%
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .loading-skeleton__shimmer {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+</style>

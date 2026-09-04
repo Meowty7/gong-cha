@@ -69,9 +69,9 @@ export const es = {
   // Product types
   // ============================================================================
   productType: {
-    materia_prima: 'Materia Prima',
-    semiterminado: 'Semiterminado',
-    producto_terminado: 'Producto Terminado',
+    raw_material: 'Materia Prima',
+    semi_finished: 'Semiterminado',
+    finished_product: 'Producto Terminado',
   },
 
   // ============================================================================
@@ -129,6 +129,54 @@ export const es = {
   },
 
   // ============================================================================
+  // Catalog
+  // ============================================================================
+  catalog: {
+    title: 'Catálogo de Productos',
+    description: 'Gestión del catálogo completo',
+    searchPlaceholder: 'Buscar por nombre o ID...',
+    filterByType: 'Filtrar por tipo',
+    allTypes: 'Todos los tipos',
+    viewGrid: 'Vista de tarjetas',
+    viewTable: 'Vista de tabla',
+    productCount: 'productos',
+    noProducts: 'No hay productos disponibles',
+    noProductsFiltered: 'No se encontraron productos con los filtros aplicados',
+  },
+
+  // ============================================================================
+  // Inventory
+  // ============================================================================
+  inventory: {
+    title: 'Inventario',
+    description: 'Existencias actuales por ubicación',
+    searchPlaceholder: 'Buscar por producto o ubicación...',
+    filterByLocation: 'Filtrar por ubicación',
+    allLocations: 'Todas las ubicaciones',
+    productId: 'ID Producto',
+    quantity: 'Cantidad',
+    location: 'Ubicación',
+    lastUpdated: 'Última actualización',
+    noInventory: 'No hay existencias registradas',
+    noInventoryFiltered: 'No se encontraron existencias con los filtros aplicados',
+    adjust: 'Ajustar',
+  },
+
+  // ============================================================================
+  // Products
+  // ============================================================================
+  product: {
+    id: 'ID',
+    name: 'Nombre',
+    type: 'Tipo',
+    unit: 'Unidad',
+    description: 'Descripción',
+    imageRef: 'Imagen',
+    noDescription: 'Sin descripción',
+    noImage: 'Sin imagen',
+  },
+
+  // ============================================================================
   // Accessibility
   // ============================================================================
   a11y: {
@@ -139,6 +187,7 @@ export const es = {
     success: 'Éxito',
     warning: 'Advertencia',
     info: 'Información',
+    productImage: 'Imagen del producto',
   },
 } as const;
 
