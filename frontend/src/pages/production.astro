@@ -1,0 +1,44 @@
+---
+import AppLayout from '../layouts/AppLayout.astro';
+import ProductionPanel from '../components/production/ProductionPanel.vue';
+import { es } from '../lib/i18n/es';
+---
+
+<AppLayout title={es.production.title} description={es.production.description}>
+  <div class="page">
+    <header class="page-header">
+      <h1 class="page-title">{es.production.title}</h1>
+      <p class="page-description">{es.production.description}</p>
+    </header>
+    <ProductionPanel client:load />
+  </div>
+</AppLayout>
+
+<style>
+  .page {
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  .page-header {
+    margin-bottom: var(--space-8);
+  }
+
+  .page-title {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    color: var(--color-text);
+    margin-bottom: var(--space-3);
+  }
+
+  .page-description {
+    font-size: 1.125rem;
+    color: var(--color-text-muted);
+  }
+
+  @media (min-width: 768px) {
+    .page-title {
+      font-size: 3rem;
+    }
+  }
+</style>

@@ -68,6 +68,7 @@ export const es = {
     unitMismatch: 'La unidad no coincide con la del producto',
     duplicateComponent: 'La receta no puede repetir el mismo componente',
     selfComponent: 'Un producto no puede ser componente de su propia receta',
+    insufficientInventory: 'Inventario insuficiente. No se descontaron existencias.',
   },
 
   // ============================================================================
@@ -331,6 +332,50 @@ export const es = {
     modeLegend: 'Modo de planificación',
     modeStored: 'Usar evento guardado',
     modeInline: 'Capturar demanda',
+  },
+
+  // ============================================================================
+  // Production
+  // ============================================================================
+  production: {
+    title: 'Producción',
+    description: 'Simula el consumo y confirma el descuento de inventario',
+    product: 'Producto',
+    productPlaceholder: 'Selecciona un producto',
+    quantity: 'Cantidad a producir',
+    quantityHint: 'Usa un número mayor que cero. La cantidad se envía como texto decimal.',
+    simulate: 'Simular consumo',
+    simulating: 'Simulando…',
+    previewBadge: 'Vista previa — no se ha descontado inventario',
+    previewHint: 'Esta simulación es de solo lectura. El inventario real no cambia hasta que confirmes.',
+    committedBadge: 'Producción confirmada — inventario actualizado',
+    consumed: 'Materiales a consumir',
+    leftovers: 'Sobrante proyectado',
+    leftoversCommitted: 'Sobrante después del descuento',
+    continueConfirm: 'Continuar a confirmación',
+    dialogTitle: 'Confirmar producción',
+    dialogBody: 'Esta acción escribe en el inventario. La simulación anterior no descontó existencias.',
+    confirmWrite: 'Confirmar y descontar',
+    confirming: 'Confirmando…',
+    comparison: 'Inventario antes y después',
+    comparisonPreview: 'Comparación proyectada (aún no escrita)',
+    comparisonCommitted: 'Comparación real después de confirmar',
+    colProduct: 'Producto',
+    colBefore: 'Antes',
+    colConsumed: 'Consumo',
+    colAfter: 'Después',
+    deducted: 'Descontado',
+    historyTitle: 'Historial de movimientos',
+    historyEmpty: 'Aún no hay movimientos de confirmación.',
+    colChange: 'Cambio',
+    colBalance: 'Saldo',
+    colReason: 'Motivo',
+    colWhen: 'Fecha',
+    reasonConfirm: 'Confirmación de producción',
+    insufficientInventory: 'Inventario insuficiente. La simulación no descontó existencias.',
+    confirmConflict: 'Esta confirmación ya está en curso o la clave no coincide. Reintenta la misma solicitud.',
+    retryHint: 'El reintento usa la misma clave de idempotencia para no duplicar el descuento.',
+    dismiss: 'Cerrar aviso',
   },
 } as const;
 
