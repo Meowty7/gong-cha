@@ -116,6 +116,8 @@ export const es = {
     invalidFormat: 'Formato inválido',
     mustBePositive: 'Debe ser un número positivo',
     mustBeGreaterThanZero: 'Debe ser mayor que cero',
+    validationErrors: 'Hay errores en el formulario',
+    fieldError: 'Error en el campo',
   },
 
   // ============================================================================
@@ -160,6 +162,11 @@ export const es = {
     noInventory: 'No hay existencias registradas',
     noInventoryFiltered: 'No se encontraron existencias con los filtros aplicados',
     adjust: 'Ajustar',
+    adjustInventory: 'Ajustar Inventario',
+    setQuantity: 'Establecer Cantidad',
+    adjustSuccess: 'Inventario ajustado exitosamente',
+    quantityPlaceholder: 'Ej: 150.5',
+    locationPlaceholder: 'Ej: Bodega principal',
   },
 
   // ============================================================================
@@ -174,6 +181,15 @@ export const es = {
     imageRef: 'Imagen',
     noDescription: 'Sin descripción',
     noImage: 'Sin imagen',
+    create: 'Crear Producto',
+    edit: 'Editar Producto',
+    createSuccess: 'Producto creado exitosamente',
+    updateSuccess: 'Producto actualizado exitosamente',
+    deleteSuccess: 'Producto eliminado exitosamente',
+    productIdPlaceholder: 'Ej: TEA001',
+    namePlaceholder: 'Ej: Té verde jazmín',
+    descriptionPlaceholder: 'Descripción opcional del producto',
+    imageRefPlaceholder: 'Ej: te_verde.jpg',
   },
 
   // ============================================================================

@@ -1,7 +1,12 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useInventory } from '../composables/useInventory';
+import { upsertInventory } from '../lib/api/resources/inventory';
+import type { InventoryBalance, UpsertInventoryRequest, ApiError } from '../types/api';
+import { isApiError } from '../types/api';
 import InventoryTable from './InventoryTable.vue';
+import InventoryAdjustmentForm from './InventoryAdjustmentForm.vue';
+import Sheet from './Sheet.vue';
 import ErrorBanner from './ErrorBanner.vue';
 import { es } from '../lib/i18n/es';
 
@@ -13,7 +18,15 @@ const {
   locationFilter,
   fetch,
   clearFilters,
+  findByProductId,
 } = useInventory();
+
+// Sheet state
+const sheetOpen = ref(false);
+const adjustingProductId = ref('');
+const currentBalance = ref<InventoryBalance | undefined>(undefined);
+const formLoading = ref(false);
+const formError = ref<ApiError | Error | null>(null);
 
 onMounted(() => {
   fetch();
@@ -21,6 +34,43 @@ onMounted(() => {
 
 function handleErrorDismiss() {
   error.value = null;
+}
+
+function handleFormErrorDismiss() {
+  formError.value = null;
+}
+
+function openAdjustSheet(productId: string) {
+  adjustingProductId.value = productId;
+  currentBalance.value = findByProductId(productId);
+  formError.value = null;
+  sheetOpen.value = true;
+}
+
+function closeSheet() {
+  sheetOpen.value = false;
+  adjustingProductId.value = '';
+  currentBalance.value = undefined;
+  formError.value = null;
+}
+
+async function handleFormSubmit(data: UpsertInventoryRequest) {
+  formLoading.value = true;
+  formError.value = null;
+
+  try {
+    await upsertInventory(adjustingProductId.value, data);
+
+    // Refresh inventory list
+    await fetch();
+    
+    // Close sheet
+    closeSheet();
+  } catch (err) {
+    formError.value = isApiError(err) ? err : (err as Error);
+  } finally {
+    formLoading.value = false;
+  }
 }
 </script>
 
@@ -96,8 +146,32 @@ function handleErrorDismiss() {
         {{ es.inventory.noInventory.replace('No hay ', '') }}
       </div>
       
-      <InventoryTable :inventory="filteredInventory" />
+      <InventoryTable
+        :inventory="filteredInventory"
+        @adjust="openAdjustSheet"
+      />
     </div>
+
+    <!-- Inventory adjustment sheet -->
+    <Sheet
+      v-model:open="sheetOpen"
+      :title="es.inventory.adjustInventory"
+      :description="es.inventory.setQuantity"
+    >
+      <ErrorBanner
+        v-if="formError"
+        :error="formError"
+        @dismiss="handleFormErrorDismiss"
+      />
+      
+      <InventoryAdjustmentForm
+        :product-id="adjustingProductId"
+        :current-balance="currentBalance"
+        :loading="formLoading"
+        @submit="handleFormSubmit"
+        @cancel="closeSheet"
+      />
+    </Sheet>
   </div>
 </template>
 

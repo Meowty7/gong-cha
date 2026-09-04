@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useProducts } from '../composables/useProducts';
+import { createProduct, updateProduct } from '../lib/api/resources/products';
+import type { Product, CreateProductRequest, UpdateProductRequest, ApiError } from '../types/api';
+import { isApiError } from '../types/api';
 import ProductCard from './ProductCard.vue';
 import ProductTable from './ProductTable.vue';
+import ProductForm from './ProductForm.vue';
+import Sheet from './Sheet.vue';
 import ErrorBanner from './ErrorBanner.vue';
 import { es } from '../lib/i18n/es';
 
@@ -19,12 +24,66 @@ const {
   clearFilters,
 } = useProducts();
 
+// Sheet state
+const sheetOpen = ref(false);
+const sheetMode = ref<'create' | 'edit'>('create');
+const editingProduct = ref<Product | undefined>(undefined);
+const formLoading = ref(false);
+const formError = ref<ApiError | Error | null>(null);
+
 onMounted(() => {
   fetch();
 });
 
 function handleErrorDismiss() {
   error.value = null;
+}
+
+function handleFormErrorDismiss() {
+  formError.value = null;
+}
+
+function openCreateSheet() {
+  sheetMode.value = 'create';
+  editingProduct.value = undefined;
+  formError.value = null;
+  sheetOpen.value = true;
+}
+
+function openEditSheet(product: Product) {
+  sheetMode.value = 'edit';
+  editingProduct.value = product;
+  formError.value = null;
+  sheetOpen.value = true;
+}
+
+function closeSheet() {
+  sheetOpen.value = false;
+  editingProduct.value = undefined;
+  formError.value = null;
+}
+
+async function handleFormSubmit(data: CreateProductRequest | UpdateProductRequest) {
+  formLoading.value = true;
+  formError.value = null;
+
+  try {
+    if (sheetMode.value === 'create') {
+      await createProduct(data as CreateProductRequest);
+    } else if (editingProduct.value) {
+      await updateProduct(editingProduct.value.product_id, data as UpdateProductRequest);
+    }
+
+    // Refresh products list
+    await fetch();
+    
+    // Close sheet
+    closeSheet();
+  } catch (err) {
+    formError.value = isApiError(err) ? err : (err as Error);
+  } finally {
+    formLoading.value = false;
+  }
 }
 </script>
 
@@ -62,35 +121,45 @@ function handleErrorDismiss() {
         </button>
       </div>
       
-      <div class="catalog-view-toggle">
+      <div class="catalog-actions">
+        <div class="catalog-view-toggle">
+          <button
+            type="button"
+            class="view-toggle-btn"
+            :class="{ 'view-toggle-btn--active': viewMode === 'grid' }"
+            :aria-label="es.catalog.viewGrid"
+            :aria-pressed="viewMode === 'grid'"
+            @click="viewMode = 'grid'"
+          >
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="6" height="6" rx="1" />
+              <rect x="11" y="3" width="6" height="6" rx="1" />
+              <rect x="3" y="11" width="6" height="6" rx="1" />
+              <rect x="11" y="11" width="6" height="6" rx="1" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            class="view-toggle-btn"
+            :class="{ 'view-toggle-btn--active': viewMode === 'table' }"
+            :aria-label="es.catalog.viewTable"
+            :aria-pressed="viewMode === 'table'"
+            @click="viewMode = 'table'"
+          >
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="6" x2="17" y2="6" />
+              <line x1="3" y1="10" x2="17" y2="10" />
+              <line x1="3" y1="14" x2="17" y2="14" />
+            </svg>
+          </button>
+        </div>
+
         <button
           type="button"
-          class="view-toggle-btn"
-          :class="{ 'view-toggle-btn--active': viewMode === 'grid' }"
-          :aria-label="es.catalog.viewGrid"
-          :aria-pressed="viewMode === 'grid'"
-          @click="viewMode = 'grid'"
+          class="btn btn-primary"
+          @click="openCreateSheet"
         >
-          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="6" height="6" rx="1" />
-            <rect x="11" y="3" width="6" height="6" rx="1" />
-            <rect x="3" y="11" width="6" height="6" rx="1" />
-            <rect x="11" y="11" width="6" height="6" rx="1" />
-          </svg>
-        </button>
-        <button
-          type="button"
-          class="view-toggle-btn"
-          :class="{ 'view-toggle-btn--active': viewMode === 'table' }"
-          :aria-label="es.catalog.viewTable"
-          :aria-pressed="viewMode === 'table'"
-          @click="viewMode = 'table'"
-        >
-          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="3" y1="6" x2="17" y2="6" />
-            <line x1="3" y1="10" x2="17" y2="10" />
-            <line x1="3" y1="14" x2="17" y2="14" />
-          </svg>
+          {{ es.actions.create }}
         </button>
       </div>
     </div>
@@ -153,6 +222,25 @@ function handleErrorDismiss() {
         :products="filteredProducts"
       />
     </div>
+
+    <!-- Product form sheet -->
+    <Sheet
+      v-model:open="sheetOpen"
+      :title="sheetMode === 'create' ? es.product.create : es.product.edit"
+    >
+      <ErrorBanner
+        v-if="formError"
+        :error="formError"
+        @dismiss="handleFormErrorDismiss"
+      />
+      
+      <ProductForm
+        :product="editingProduct"
+        :loading="formLoading"
+        @submit="handleFormSubmit"
+        @cancel="closeSheet"
+      />
+    </Sheet>
   </div>
 </template>
 
@@ -177,6 +265,13 @@ function handleErrorDismiss() {
   gap: var(--space-3);
   flex: 1;
   min-width: 0;
+  flex-wrap: wrap;
+}
+
+.catalog-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   flex-wrap: wrap;
 }
 

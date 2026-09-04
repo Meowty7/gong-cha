@@ -6,7 +6,12 @@ interface Props {
   inventory: InventoryBalance[];
 }
 
+interface Emits {
+  (e: 'adjust', productId: string): void;
+}
+
 defineProps<Props>();
+const emit = defineEmits<Emits>();
 </script>
 
 <template>
@@ -17,6 +22,7 @@ defineProps<Props>();
           <th scope="col">{{ es.inventory.productId }}</th>
           <th scope="col">{{ es.inventory.quantity }}</th>
           <th scope="col">{{ es.inventory.location }}</th>
+          <th scope="col"><span class="sr-only">{{ es.actions.edit }}</span></th>
         </tr>
       </thead>
       <tbody>
@@ -28,6 +34,16 @@ defineProps<Props>();
             {{ item.quantity }} {{ item.unit }}
           </td>
           <td>{{ item.location }}</td>
+          <td class="inventory-table__actions">
+            <button
+              type="button"
+              class="btn-adjust"
+              :aria-label="`${es.inventory.adjust} ${item.product_id}`"
+              @click="emit('adjust', item.product_id)"
+            >
+              {{ es.inventory.adjust }}
+            </button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -92,6 +108,28 @@ defineProps<Props>();
   color: var(--color-primary);
 }
 
+.inventory-table__actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.btn-adjust {
+  padding: var(--space-2) var(--space-4);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: transparent;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-adjust:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
 /* Responsive: adjust padding on small screens */
 @media (max-width: 768px) {
   .inventory-table {
@@ -101,6 +139,11 @@ defineProps<Props>();
   .inventory-table th,
   .inventory-table td {
     padding: var(--space-2) var(--space-3);
+  }
+  
+  .btn-adjust {
+    padding: var(--space-1) var(--space-3);
+    font-size: 0.75rem;
   }
 }
 </style>
