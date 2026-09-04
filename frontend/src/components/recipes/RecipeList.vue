@@ -31,6 +31,12 @@ function productTypeOf(products: Product[], id: string): ProductType | undefined
   return products.find((product) => product.product_id === id)?.type;
 }
 
+function recipeMeta(recipe: Recipe): string {
+  const type = productTypeOf(props.products, recipe.product_result_id);
+  const count = `${recipe.components.length} ${es.recipes.componentCount}`;
+  return type ? `${count} - ${productTypeLabel(type)}` : count;
+}
+
 const typeOptions: { value: ProductType | ''; label: string }[] = [
   { value: '', label: es.catalog.allTypes },
   { value: 'raw_material', label: es.productType.raw_material },
@@ -87,7 +93,6 @@ const filtered = computed(() => {
             <th scope="col">{{ es.recipes.resultProduct }}</th>
             <th scope="col">{{ es.recipes.recipeId }}</th>
             <th scope="col" class="recipe-table__num">{{ es.recipes.batchYield }}</th>
-            <th scope="col"><span class="sr-only">{{ es.actions.edit }}</span></th>
           </tr>
         </thead>
         <tbody>
@@ -96,7 +101,7 @@ const filtered = computed(() => {
             :key="recipe.recipe_id"
             :class="{ 'is-selected': recipe.recipe_id === selectedId }"
           >
-            <td :data-label="es.recipes.resultProduct">
+            <td class="recipe-table__product">
               <button
                 type="button"
                 class="recipe-table__select"
@@ -105,31 +110,29 @@ const filtered = computed(() => {
               >
                 {{ productName(products, recipe.product_result_id) }}
               </button>
-              <span class="recipe-table__type">
-                {{ recipe.components.length }} {{ es.recipes.componentCount }}<template v-if="productTypeOf(products, recipe.product_result_id)"> · {{ productTypeLabel(productTypeOf(products, recipe.product_result_id)!) }}</template>
-              </span>
+              <p class="recipe-table__meta">{{ recipeMeta(recipe) }}</p>
+              <div class="recipe-table__actions">
+                <button
+                  type="button"
+                  class="recipe-table__edit"
+                  :aria-label="`${es.actions.edit} ${recipe.recipe_id}`"
+                  @click="emit('edit', recipe.recipe_id)"
+                >
+                  {{ es.actions.edit }}
+                </button>
+                <button
+                  type="button"
+                  class="recipe-table__edit"
+                  :aria-label="`${es.actions.delete} ${recipe.recipe_id}`"
+                  @click="emit('delete', recipe.recipe_id)"
+                >
+                  {{ es.actions.delete }}
+                </button>
+              </div>
             </td>
             <td class="recipe-table__id" :data-label="es.recipes.recipeId"><code>{{ recipe.recipe_id }}</code></td>
             <td class="recipe-table__yield recipe-table__num tabular-nums" :data-label="es.recipes.batchYield">
               {{ recipe.batch_yield }} {{ formatUnit(recipe.yield_unit) }}
-            </td>
-            <td class="recipe-table__action recipe-table__num">
-              <button
-                type="button"
-                class="recipe-table__edit"
-                :aria-label="`${es.actions.edit} ${recipe.recipe_id}`"
-                @click="emit('edit', recipe.recipe_id)"
-              >
-                {{ es.actions.edit }}
-              </button>
-              <button
-                type="button"
-                class="recipe-table__edit"
-                :aria-label="`${es.actions.delete} ${recipe.recipe_id}`"
-                @click="emit('delete', recipe.recipe_id)"
-              >
-                {{ es.actions.delete }}
-              </button>
             </td>
           </tr>
         </tbody>
@@ -164,22 +167,8 @@ const filtered = computed(() => {
     max-width: none;
   }
 
-  .recipe-table tbody tr {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .recipe-table td {
+  .recipe-table td.recipe-table__product {
     display: block;
-    padding: 0;
-  }
-
-  .recipe-table td::before {
-    display: none;
   }
 
   .recipe-table td.recipe-table__id,
@@ -187,13 +176,8 @@ const filtered = computed(() => {
     display: none;
   }
 
-  .recipe-table__action {
-    flex-shrink: 0;
-  }
-
   .recipe-table__edit {
     min-height: 2.75rem;
-    padding: 0 0.25rem;
   }
 }
 
@@ -211,7 +195,7 @@ const filtered = computed(() => {
   text-align: end;
 }
 
-.recipe-list__table-wrap td:first-child {
+.recipe-table td.recipe-table__product {
   white-space: normal;
 }
 
@@ -232,17 +216,17 @@ const filtered = computed(() => {
   color: var(--color-primary-dark);
 }
 
-.recipe-table__type {
-  display: block;
-  margin-top: 0.125rem;
+.recipe-table__meta {
+  margin: 0.2rem 0 0;
   font-size: 0.75rem;
   color: var(--color-text-subtle);
 }
 
-.recipe-table__action {
+.recipe-table__actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  margin-top: 0.5rem;
 }
 
 .recipe-table__edit {

@@ -6,6 +6,7 @@ import { getRecipe, listRecipes } from '../lib/api/resources/recipes';
 import { toDisplayError } from '../lib/api/errors';
 import type { ApiError, InventoryBalance, Product, Recipe } from '../types/api';
 import { es } from '../lib/i18n/es';
+import ContentLoader from './ui/ContentLoader.vue';
 import ErrorBanner from './ErrorBanner.vue';
 
 const products = ref<Product[]>([]);
@@ -99,10 +100,11 @@ onMounted(() => {
 
     <ErrorBanner v-if="error" :error="error" @dismiss="error = null" />
 
+    <ContentLoader :loading="loading" :has-items="products.length > 0" variant="cards">
     <section class="kpi-grid" aria-label="Indicadores operativos">
       <article v-for="metric in metrics" :key="metric.label" class="card kpi">
         <p class="kpi-label">{{ metric.label }}</p>
-        <p class="kpi-value tabular-nums">{{ loading ? '—' : metric.value }}</p>
+        <p class="kpi-value tabular-nums">{{ metric.value }}</p>
       </article>
     </section>
 
@@ -116,7 +118,8 @@ onMounted(() => {
         </div>
         <ol class="barlist">
           <li v-for="row in topUsage" :key="row.id" class="barlist__row">
-            <div class="barlist__bar" :style="{ width: `${(row.count / maxUsage) * 100}%` }">
+            <div class="barlist__track">
+              <div class="barlist__bar" :style="{ width: `${(row.count / maxUsage) * 100}%` }" />
               <span class="barlist__label">{{ row.name }}</span>
             </div>
             <span class="barlist__value tabular-nums">{{ row.count }}</span>
@@ -127,7 +130,7 @@ onMounted(() => {
       <section class="card panel" aria-labelledby="missing-title">
         <h2 id="missing-title" class="panel__title">{{ es.dashboard.missingTitle }}</h2>
         <p class="panel__copy">{{ es.dashboard.missingDescription }}</p>
-        <p v-if="!loading && missing.length === 0" class="panel__empty">{{ es.dashboard.missingEmpty }}</p>
+        <p v-if="missing.length === 0" class="panel__empty">{{ es.dashboard.missingEmpty }}</p>
         <table v-else class="data-table">
           <thead>
             <tr>
@@ -138,7 +141,7 @@ onMounted(() => {
           </thead>
           <tbody>
             <tr v-for="row in missing" :key="row.id">
-              <td class="cell-strong" :data-label="es.dashboard.ingredient">{{ row.name }}</td>
+              <td class="cell-strong cell-name" :data-label="es.dashboard.ingredient">{{ row.name }}</td>
               <td class="num tabular-nums" :data-label="es.dashboard.usedIn">{{ row.count }}</td>
               <td class="num" :data-label="es.dashboard.stock"><span class="badge badge-err">{{ es.dashboard.noStock }}</span></td>
             </tr>
@@ -146,6 +149,7 @@ onMounted(() => {
         </table>
       </section>
     </div>
+    </ContentLoader>
 
     <nav class="actions" :aria-label="es.dashboard.quickActions">
       <a v-for="action in actions" :key="action.href" :href="action.href" class="actions__link">
@@ -260,23 +264,28 @@ onMounted(() => {
   gap: 1rem;
 }
 
-.barlist__bar {
+.barlist__track {
+  position: relative;
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
-  height: 2rem;
-  min-width: 0;
+  min-height: 2rem;
+}
+
+.barlist__bar {
+  position: absolute;
+  inset: 0 auto 0 0;
   max-width: 100%;
-  padding: 0 0.625rem;
   background: var(--color-primary-soft);
   transition: width var(--duration-base) var(--ease-out);
 }
 
 .barlist__label {
+  position: relative;
+  padding: 0.375rem 0.625rem;
   font-size: 0.875rem;
   color: var(--color-text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .barlist__value {
@@ -296,6 +305,12 @@ onMounted(() => {
 .cell-strong {
   color: var(--color-text);
   font-weight: 500;
+}
+
+.panel .cell-name {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
 }
 
 .badge {

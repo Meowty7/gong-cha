@@ -67,7 +67,7 @@ function unitLabel(unit: string): string {
 
 .req__table th,
 .req__table td {
-  padding: 0.75rem 0.75rem;
+  padding: 0.875rem 1.25rem;
   text-align: left;
   border-bottom: 1px solid var(--color-border);
   vertical-align: top;
@@ -107,7 +107,7 @@ function unitLabel(unit: string): string {
   }
 
   .req__table tr {
-    padding: 0.75rem 0;
+    padding: 0.75rem 1.25rem;
     border-bottom: 1px solid var(--color-border);
   }
 

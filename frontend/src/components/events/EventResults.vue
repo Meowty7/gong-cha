@@ -212,7 +212,7 @@ function lineTitle(line: LineExpansion): string {
   }
 
   .cmp tr {
-    padding: 0.75rem 0;
+    padding: 0.75rem 1.25rem;
     border-bottom: 1px solid var(--color-border);
   }
 
