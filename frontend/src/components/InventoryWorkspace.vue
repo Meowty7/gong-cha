@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useInventory } from '../composables/useInventory';
 import { useProductIndex } from '../composables/useProductIndex';
 import { upsertInventory } from '../lib/api/resources/inventory';
@@ -8,12 +8,13 @@ import { isApiError } from '../types/api';
 import InventoryTable from './InventoryTable.vue';
 import InventoryAdjustmentForm from './InventoryAdjustmentForm.vue';
 import Sheet from './Sheet.vue';
+import ContentLoader from './ui/ContentLoader.vue';
 import ErrorBanner from './ErrorBanner.vue';
 import { humanizeError } from '../lib/api/errors';
 import { showToast } from '../composables/useToast';
 import { es } from '../lib/i18n/es';
 
-const { products, names, units, load: loadNames } = useProductIndex();
+const { products, names, units, loading: namesLoading, load: loadNames } = useProductIndex();
 const {
   filteredInventory,
   loading,
@@ -24,6 +25,8 @@ const {
   clearFilters,
   findByProductId,
 } = useInventory({ productNames: names, products });
+const dataLoading = computed(() => loading.value || namesLoading.value);
+const hasInventoryItems = computed(() => filteredInventory.value.length > 0);
 
 // Sheet state
 const sheetOpen = ref(false);
@@ -120,45 +123,38 @@ async function handleFormSubmit(data: UpsertInventoryRequest) {
       @dismiss="handleErrorDismiss"
     />
 
-    <!-- Loading state -->
-    <div v-if="loading" class="inventory-loading" aria-live="polite" aria-busy="true">
-      <div class="skeleton-table">
-        <div v-for="i in 8" :key="i" class="skeleton-row"></div>
-      </div>
-    </div>
-
-    <!-- Empty state -->
-    <div
-      v-else-if="!loading && filteredInventory.length === 0"
-      class="inventory-empty"
-      role="status"
-    >
-      <p class="inventory-empty__message">
-        {{ searchQuery || locationFilter ? es.inventory.noInventoryFiltered : es.inventory.noInventory }}
-      </p>
-      <button
-        v-if="searchQuery || locationFilter"
-        type="button"
-        class="btn btn-primary"
-        @click="clearFilters"
+    <ContentLoader :loading="dataLoading" :has-items="hasInventoryItems" variant="table">
+      <div
+        v-if="filteredInventory.length === 0"
+        class="inventory-empty"
+        role="status"
       >
-        {{ es.actions.clear }}
-      </button>
-    </div>
-
-    <!-- Inventory table -->
-    <div v-else-if="!loading">
-      <div class="inventory-count">
-        <span class="tabular-nums">{{ filteredInventory.length }}</span>
-        {{ es.inventory.noInventory.replace('No hay ', '') }}
+        <p class="inventory-empty__message">
+          {{ searchQuery || locationFilter ? es.inventory.noInventoryFiltered : es.inventory.noInventory }}
+        </p>
+        <button
+          v-if="searchQuery || locationFilter"
+          type="button"
+          class="btn btn-primary"
+          @click="clearFilters"
+        >
+          {{ es.actions.clear }}
+        </button>
       </div>
-      
-      <InventoryTable
-        :inventory="filteredInventory"
-        :product-names="names"
-        @adjust="openAdjustSheet"
-      />
-    </div>
+
+      <div v-else>
+        <div class="inventory-count">
+          <span class="tabular-nums">{{ filteredInventory.length }}</span>
+          {{ es.inventory.noInventory.replace('No hay ', '') }}
+        </div>
+
+        <InventoryTable
+          :inventory="filteredInventory"
+          :product-names="names"
+          @adjust="openAdjustSheet"
+        />
+      </div>
+    </ContentLoader>
 
     <!-- Inventory adjustment sheet -->
     <Sheet
@@ -239,49 +235,6 @@ async function handleFormSubmit(data: UpsertInventoryRequest) {
   color: var(--color-text-muted);
 }
 
-/* Loading skeletons */
-.inventory-loading {
-  min-height: 400px;
-}
-
-.skeleton-table {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.skeleton-row {
-  height: 60px;
-  background: var(--color-bg-warm);
-  position: relative;
-  overflow: hidden;
-}
-
-.skeleton-row::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.6) 50%,
-    transparent 100%
-  );
-  animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
 /* Responsive */
 @media (max-width: 768px) {
   .inventory-filters {
@@ -292,14 +245,6 @@ async function handleFormSubmit(data: UpsertInventoryRequest) {
   .inventory-search,
   .inventory-location-filter {
     max-width: none;
-  }
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .skeleton-row::after {
-    animation: none;
-    opacity: 0.5;
   }
 }
 </style>

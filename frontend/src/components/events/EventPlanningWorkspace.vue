@@ -4,6 +4,7 @@ import { TabsContent, TabsIndicator, TabsList, TabsRoot, TabsTrigger } from 'rek
 import { useProductIndex } from '../../composables/useProductIndex';
 import { useEventPlanning } from '../../composables/useEventPlanning';
 import { es } from '../../lib/i18n/es';
+import ContentLoader from '../ui/ContentLoader.vue';
 import ErrorBanner from '../ErrorBanner.vue';
 import DemandRowList from './DemandRowList.vue';
 import EventResults from './EventResults.vue';
@@ -40,9 +41,9 @@ onMounted(() => {
 
 <template>
   <div class="workspace">
-    <p v-if="catalogLoading" class="muted">{{ es.states.loading }}</p>
     <ErrorBanner :error="catalogError ?? error" :dismissible="!!error" @dismiss="dismissError" />
 
+    <ContentLoader :loading="catalogLoading" :has-items="products.length > 0" variant="lines">
     <form class="card form" @submit.prevent="submit">
       <TabsRoot v-model="mode" class="tabs">
         <TabsList class="tabs__list" :aria-label="es.events.modeLegend">
@@ -82,6 +83,7 @@ onMounted(() => {
         {{ pending ? es.actions.loading : es.actions.calculate }}
       </button>
     </form>
+    </ContentLoader>
 
     <Transition name="fade">
       <EventResults

@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue';
+import { computed, ref, shallowRef } from 'vue';
 import type { Ref } from 'vue';
 import {
   confirmProduction,
@@ -52,7 +52,7 @@ export function useProduction() {
   const movements: Ref<InventoryMovement[]> = ref([]);
   const intent: Ref<ConfirmIntent | null> = ref(null);
   const dialogOpen = ref(false);
-  const loading = ref(false);
+  const loading = shallowRef(true);
   const simulating = ref(false);
   const confirming = ref(false);
   const error: Ref<ApiError | null> = ref(null);

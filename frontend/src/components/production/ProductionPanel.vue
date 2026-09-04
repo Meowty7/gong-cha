@@ -6,6 +6,7 @@ import ProductionForm from './ProductionForm.vue';
 import SimulationResults from './SimulationResults.vue';
 import ConfirmDialog from './ConfirmDialog.vue';
 import MovementHistory from './MovementHistory.vue';
+import ContentLoader from '../ui/ContentLoader.vue';
 import ErrorBanner from '../ErrorBanner.vue';
 
 const production = useProduction();
@@ -55,8 +56,6 @@ onMounted(() => {
 
 <template>
   <div class="panel">
-    <p v-if="loading" class="status">{{ es.states.loading }}</p>
-
     <ErrorBanner
       v-if="error && !simulation"
       :error="error"
@@ -64,14 +63,16 @@ onMounted(() => {
       @dismiss="dismissError"
     />
 
-    <ProductionForm
-      v-model:product-id="productId"
-      v-model:quantity="quantity"
-      :products="producibleProducts"
-      :pending="formPending"
-      :field-error="fieldError"
-      @simulate="simulate"
-    />
+    <ContentLoader :loading="loading" :has-items="producibleProducts.length > 0" variant="lines">
+      <ProductionForm
+        v-model:product-id="productId"
+        v-model:quantity="quantity"
+        :products="producibleProducts"
+        :pending="formPending"
+        :field-error="fieldError"
+        @simulate="simulate"
+      />
+    </ContentLoader>
 
     <SimulationResults
       v-if="result"
@@ -108,9 +109,5 @@ onMounted(() => {
 .panel {
   display: grid;
   gap: 1.5rem;
-}
-
-.status {
-  color: var(--color-text-muted);
 }
 </style>

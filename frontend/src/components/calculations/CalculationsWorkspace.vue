@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { onMounted, shallowRef } from 'vue';
+import { computed, onMounted, shallowRef } from 'vue';
 import { useProductIndex } from '../../composables/useProductIndex';
 import { useInventorySnapshot } from '../../composables/useInventorySnapshot';
 import { es } from '../../lib/i18n/es';
+import ContentLoader from '../ui/ContentLoader.vue';
 import ErrorBanner from '../ErrorBanner.vue';
 import DirectCapacityPanel from './DirectCapacityPanel.vue';
 import InverseRequirementsPanel from './InverseRequirementsPanel.vue';
@@ -27,6 +28,7 @@ const {
 type CalculationMode = 'capacity' | 'requirements';
 
 const mode = shallowRef<CalculationMode>('capacity');
+const dataLoading = computed(() => catalogLoading.value || stockLoading.value);
 
 onMounted(() => {
   void loadCatalog();
@@ -38,9 +40,6 @@ onMounted(() => {
 
 <template>
   <div class="workspace">
-    <p v-if="catalogLoading || stockLoading" class="workspace__status">
-      {{ es.states.loading }}
-    </p>
     <ErrorBanner
       :error="catalogError ?? stockError"
       :dismissible="false"
@@ -77,20 +76,22 @@ onMounted(() => {
       </div>
     </section>
 
-    <div class="workspace__panel">
-      <DirectCapacityPanel
-        v-if="mode === 'capacity'"
-        :products="products"
-        :product-names="names"
-        :balances="balances"
-        :live-stock="byId"
-      />
-      <InverseRequirementsPanel
-        v-else
-        :products="products"
-        :product-names="names"
-      />
-    </div>
+    <ContentLoader :loading="dataLoading" :has-items="products.length > 0" variant="lines">
+      <div class="workspace__panel">
+        <DirectCapacityPanel
+          v-if="mode === 'capacity'"
+          :products="products"
+          :product-names="names"
+          :balances="balances"
+          :live-stock="byId"
+        />
+        <InverseRequirementsPanel
+          v-else
+          :products="products"
+          :product-names="names"
+        />
+      </div>
+    </ContentLoader>
 
     <CalculationHistory />
   </div>
@@ -101,11 +102,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-}
-
-.workspace__status {
-  margin: 0;
-  color: var(--color-text-muted);
 }
 
 .goal {

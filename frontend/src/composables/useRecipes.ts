@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue';
+import { computed, ref, shallowRef } from 'vue';
 import type { Ref } from 'vue';
 import { get } from '../lib/api/client';
 import {
@@ -30,7 +30,7 @@ function isCancel(error: unknown): boolean {
 export function useRecipes() {
   const recipes: Ref<Recipe[]> = ref([]);
   const products: Ref<Product[]> = ref([]);
-  const loading = ref(false);
+  const loading = shallowRef(true);
   const error: Ref<ApiError | Error | null> = ref(null);
   const selectedId: Ref<string | null> = ref(null);
   const abortController: Ref<AbortController | null> = ref(null);

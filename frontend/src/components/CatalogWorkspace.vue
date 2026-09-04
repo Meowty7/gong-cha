@@ -8,6 +8,7 @@ import ProductCard from './ProductCard.vue';
 import ProductTable from './ProductTable.vue';
 import ProductForm from './ProductForm.vue';
 import Sheet from './Sheet.vue';
+import ContentLoader from './ui/ContentLoader.vue';
 import ErrorBanner from './ErrorBanner.vue';
 import ConfirmDialog from './ConfirmDialog.vue';
 import { humanizeError } from '../lib/api/errors';
@@ -18,6 +19,7 @@ type ViewMode = 'grid' | 'table';
 
 const viewMode = ref<ViewMode>('grid');
 const {
+  products,
   filteredProducts,
   loading,
   error,
@@ -26,6 +28,7 @@ const {
   fetch,
   clearFilters,
 } = useProducts();
+const listVariant = computed(() => (viewMode.value === 'grid' ? 'cards' : 'table'));
 
 // Sheet state
 const sheetOpen = ref(false);
@@ -225,61 +228,49 @@ async function handleFormSubmit(data: CreateProductRequest | UpdateProductReques
       @dismiss="handleErrorDismiss"
     />
 
-    <!-- Loading state -->
-    <div v-if="loading" class="catalog-loading" aria-live="polite" aria-busy="true">
-      <div v-if="viewMode === 'grid'" class="product-grid">
-        <div v-for="i in 6" :key="i" class="skeleton-card"></div>
-      </div>
-      <div v-else class="skeleton-table">
-        <div v-for="i in 5" :key="i" class="skeleton-row"></div>
-      </div>
-    </div>
-
-    <!-- Empty state -->
-    <div
-      v-else-if="!loading && filteredProducts.length === 0"
-      class="catalog-empty"
-      role="status"
-    >
-      <p class="catalog-empty__message">
-        {{ searchQuery || typeFilter ? es.catalog.noProductsFiltered : es.catalog.noProducts }}
-      </p>
-      <button
-        v-if="searchQuery || typeFilter"
-        type="button"
-        class="btn btn-primary"
-        @click="clearFilters"
+    <ContentLoader :loading="loading" :has-items="products.length > 0" :variant="listVariant">
+      <div
+        v-if="filteredProducts.length === 0"
+        class="catalog-empty"
+        role="status"
       >
-        {{ es.actions.clear }}
-      </button>
-    </div>
-
-    <!-- Products list -->
-    <div v-else-if="!loading">
-      <div class="catalog-count">
-        <span class="tabular-nums">{{ filteredProducts.length }}</span>
-        {{ es.catalog.productCount }}
+        <p class="catalog-empty__message">
+          {{ searchQuery || typeFilter ? es.catalog.noProductsFiltered : es.catalog.noProducts }}
+        </p>
+        <button
+          v-if="searchQuery || typeFilter"
+          type="button"
+          class="btn btn-primary"
+          @click="clearFilters"
+        >
+          {{ es.actions.clear }}
+        </button>
       </div>
-      
-      <!-- Grid view -->
-      <div v-if="viewMode === 'grid'" class="product-grid">
-        <ProductCard
-          v-for="product in filteredProducts"
-          :key="product.product_id"
-          :product="product"
+
+      <div v-else>
+        <div class="catalog-count">
+          <span class="tabular-nums">{{ filteredProducts.length }}</span>
+          {{ es.catalog.productCount }}
+        </div>
+
+        <div v-if="viewMode === 'grid'" class="product-grid">
+          <ProductCard
+            v-for="product in filteredProducts"
+            :key="product.product_id"
+            :product="product"
+            @edit="openEditSheet"
+            @delete="requestDelete"
+          />
+        </div>
+
+        <ProductTable
+          v-else
+          :products="filteredProducts"
           @edit="openEditSheet"
           @delete="requestDelete"
         />
       </div>
-      
-      <!-- Table view -->
-      <ProductTable
-        v-else
-        :products="filteredProducts"
-        @edit="openEditSheet"
-        @delete="requestDelete"
-      />
-    </div>
+    </ContentLoader>
 
     <!-- Product form sheet -->
     <Sheet
@@ -421,72 +412,6 @@ async function handleFormSubmit(data: CreateProductRequest | UpdateProductReques
   color: var(--color-text-muted);
 }
 
-/* Loading skeletons */
-.catalog-loading {
-  min-height: 400px;
-}
-
-.skeleton-card {
-  aspect-ratio: 3 / 4;
-  background: var(--color-bg-warm);
-  position: relative;
-  overflow: hidden;
-}
-
-.skeleton-card::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.6) 50%,
-    transparent 100%
-  );
-  animation: shimmer 1.5s infinite;
-}
-
-.skeleton-table {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.skeleton-row {
-  height: 60px;
-  background: var(--color-bg-warm);
-  position: relative;
-  overflow: hidden;
-}
-
-.skeleton-row::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.6) 50%,
-    transparent 100%
-  );
-  animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
 /* Responsive */
 @media (max-width: 768px) {
   .catalog-controls {
@@ -505,15 +430,6 @@ async function handleFormSubmit(data: CreateProductRequest | UpdateProductReques
 
   .product-grid {
     grid-template-columns: 1fr;
-  }
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .skeleton-card::after,
-  .skeleton-row::after {
-    animation: none;
-    opacity: 0.5;
   }
 }
 </style>

@@ -1,11 +1,11 @@
-import { computed, ref } from 'vue';
+import { computed, ref, shallowRef } from 'vue';
 import { get } from '../lib/api/client';
 import { toDisplayError } from '../lib/api/errors';
 import type { ApiError, Product } from '../types/api';
 
 export function useProductIndex() {
   const products = ref<Product[]>([]);
-  const loading = ref(false);
+  const loading = shallowRef(true);
   const error = ref<ApiError | Error | null>(null);
 
   const names = computed(() => {

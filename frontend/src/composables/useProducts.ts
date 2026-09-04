@@ -2,7 +2,7 @@
  * Composable for managing product state
  */
 
-import { ref, computed } from 'vue';
+import { ref, computed, shallowRef } from 'vue';
 import type { Ref } from 'vue';
 import { listProducts } from '../lib/api/resources/products';
 import type { Product, ApiError, ProductType } from '../types/api';
@@ -15,7 +15,7 @@ export interface UseProductsOptions {
 
 export function useProducts(options: UseProductsOptions = {}) {
   const products: Ref<Product[]> = ref([]);
-  const loading = ref(false);
+  const loading = shallowRef(true);
   const error: Ref<ApiError | Error | null> = ref(null);
   const abortController: Ref<AbortController | null> = ref(null);
 

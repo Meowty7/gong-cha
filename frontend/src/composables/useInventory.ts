@@ -2,7 +2,7 @@
  * Composable for managing inventory state
  */
 
-import { ref, computed } from 'vue';
+import { ref, computed, shallowRef } from 'vue';
 import type { Ref } from 'vue';
 import { listInventory } from '../lib/api/resources/inventory';
 import { withMissingBalances } from '../lib/inventory/rows';
@@ -20,7 +20,7 @@ export interface UseInventoryOptions {
 
 export function useInventory(options: UseInventoryOptions = {}) {
   const inventory: Ref<InventoryBalance[]> = ref([]);
-  const loading = ref(false);
+  const loading = shallowRef(true);
   const error: Ref<ApiError | Error | null> = ref(null);
   const abortController: Ref<AbortController | null> = ref(null);
 
