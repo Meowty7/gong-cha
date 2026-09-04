@@ -241,13 +241,13 @@ function handleCancel() {
 .product-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: 1.5rem;
 }
 
 .form-field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 0.5rem;
 }
 
 .form-label {
@@ -282,10 +282,10 @@ function handleCancel() {
 }
 
 .form-validation-summary {
-  padding: var(--space-3) var(--space-4);
+  padding: 0.75rem 1rem;
   background: #fef2f2;
   border: 1px solid #fca5a5;
-  border-radius: var(--radius-md);
+  border-radius: 0.375rem;
 }
 
 .form-validation-summary__message {
@@ -298,7 +298,7 @@ function handleCancel() {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--space-3);
-  padding-top: var(--space-4);
+  gap: 0.75rem;
+  padding-top: 1rem;
 }
 </style>

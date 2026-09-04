@@ -68,13 +68,13 @@ const percent = computed(() => {
 .stock {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 0.5rem;
 }
 
 .stock__head {
   display: flex;
   justify-content: space-between;
-  gap: var(--space-3);
+  gap: 0.75rem;
   align-items: baseline;
   flex-wrap: wrap;
 }
@@ -93,7 +93,7 @@ const percent = computed(() => {
 .stock__status {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: 0.25rem;
   color: var(--color-text-muted);
 }
 

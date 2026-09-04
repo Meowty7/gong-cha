@@ -115,7 +115,7 @@ onMounted(() => {
 .inline {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: 1.25rem;
 }
 
 .title {
@@ -132,7 +132,7 @@ onMounted(() => {
 .modes {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-4);
+  gap: 1rem;
   margin: 0;
   padding: 0;
   border: 0;
@@ -141,7 +141,7 @@ onMounted(() => {
 .mode {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 0.5rem;
   min-height: 2.75rem;
   font-weight: 600;
 }
@@ -149,7 +149,7 @@ onMounted(() => {
 .field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 0.5rem;
   max-width: 20rem;
 }
 
@@ -166,7 +166,7 @@ onMounted(() => {
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity var(--transition-base);
+  transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .fade-enter-from,

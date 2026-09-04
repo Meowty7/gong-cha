@@ -134,48 +134,48 @@ function handleSave() {
 .recipe-workspace {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: 1.5rem;
 }
 
 .recipe-workspace__toolbar {
   display: flex;
-  gap: var(--space-3);
+  gap: 0.75rem;
   flex-wrap: wrap;
 }
 
 .recipe-workspace__alert {
-  padding: var(--space-4);
+  padding: 1rem;
   color: var(--color-error);
   background: #fef2f2;
   border: 1px solid #f0b4b2;
-  border-radius: var(--radius-md);
+  border-radius: 0.375rem;
 }
 
 .recipe-workspace__grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-6);
+  gap: 1.5rem;
 }
 
 .recipe-workspace__list,
 .recipe-workspace__detail {
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
 }
 
 .recipe-workspace__loading {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-6);
+  gap: 1.5rem;
 }
 
 .skeleton-block {
   min-height: 16rem;
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: 0.5rem;
 }
 
 @media (min-width: 1024px) {

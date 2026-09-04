@@ -7,12 +7,10 @@ const title = `${es.catalog.title} — ${es.app.name}`;
 ---
 
 <AppLayout title={title} description={es.catalog.description}>
-  <PageHeader 
-    title={es.catalog.title}
-    description={es.catalog.description}
-  />
-  
-  <div id="catalog-app"></div>
+  <div class="mx-auto max-w-7xl">
+    <PageHeader title={es.catalog.title} description={es.catalog.description} />
+    <div id="catalog-app"></div>
+  </div>
 </AppLayout>
 
 <script>

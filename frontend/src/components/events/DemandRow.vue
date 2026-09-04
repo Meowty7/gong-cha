@@ -51,7 +51,7 @@ function patch(partial: Partial<DemandRow>) {
 .demand {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-3);
+  gap: 0.75rem;
   align-items: end;
 }
 

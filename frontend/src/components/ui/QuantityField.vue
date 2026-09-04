@@ -41,7 +41,7 @@ const emit = defineEmits<{
 .field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 0.5rem;
   min-width: 0;
 }
 
@@ -54,7 +54,7 @@ const emit = defineEmits<{
 .field__row {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 0.5rem;
 }
 
 .field__control {

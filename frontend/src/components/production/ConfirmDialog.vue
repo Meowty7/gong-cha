@@ -108,9 +108,9 @@ onUnmounted(() => {
   width: min(42rem, calc(100vw - 2rem));
   max-height: calc(100vh - 2rem);
   overflow: auto;
-  padding: var(--space-6);
+  padding: 1.5rem;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: 0.5rem;
   background: var(--color-bg-surface);
   color: var(--color-text);
 }
@@ -122,11 +122,11 @@ onUnmounted(() => {
 h2 {
   font-family: var(--font-display);
   font-size: 1.75rem;
-  margin-bottom: var(--space-4);
+  margin-bottom: 1rem;
 }
 
 .body {
-  margin-bottom: var(--space-5);
+  margin-bottom: 1.25rem;
   color: var(--color-text-muted);
 }
 
@@ -135,14 +135,14 @@ h2 {
 }
 
 .error {
-  margin-top: var(--space-4);
+  margin-top: 1rem;
   color: var(--color-error);
   font-size: 0.875rem;
 }
 
 .retry-hint {
   display: block;
-  margin-top: var(--space-2);
+  margin-top: 0.5rem;
   color: var(--color-text-muted);
 }
 
@@ -150,7 +150,7 @@ h2 {
   display: flex;
   justify-content: flex-end;
   flex-wrap: wrap;
-  gap: var(--space-3);
-  margin-top: var(--space-6);
+  gap: 0.75rem;
+  margin-top: 1.5rem;
 }
 </style>

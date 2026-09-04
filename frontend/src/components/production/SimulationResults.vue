@@ -101,7 +101,7 @@ function nameOf(id: string, names: ComparisonRow[]): string {
 <style scoped>
 .results {
   display: grid;
-  gap: var(--space-5);
+  gap: 1.25rem;
 }
 
 .results[data-committed='false'] {
@@ -111,8 +111,8 @@ function nameOf(id: string, names: ComparisonRow[]): string {
 .badge {
   justify-self: start;
   margin: 0;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
   font-size: 0.8125rem;
   font-weight: 600;
 }
@@ -140,7 +140,7 @@ function nameOf(id: string, names: ComparisonRow[]): string {
 
 .tables {
   display: grid;
-  gap: var(--space-6);
+  gap: 1.5rem;
 }
 
 @media (min-width: 768px) {
@@ -152,7 +152,7 @@ function nameOf(id: string, names: ComparisonRow[]): string {
 h3 {
   font-family: var(--font-display);
   font-size: 1.25rem;
-  margin-bottom: var(--space-3);
+  margin-bottom: 0.75rem;
 }
 
 .data-table {
@@ -163,7 +163,7 @@ h3 {
 
 th,
 td {
-  padding: var(--space-3);
+  padding: 0.75rem;
   border-bottom: 1px solid var(--color-border);
   text-align: left;
 }
@@ -176,6 +176,6 @@ td {
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
+  gap: 0.75rem;
 }
 </style>

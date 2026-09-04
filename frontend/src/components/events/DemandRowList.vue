@@ -36,6 +36,6 @@ const emit = defineEmits<{
 .list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: 1rem;
 }
 </style>

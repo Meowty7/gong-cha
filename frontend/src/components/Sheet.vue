@@ -59,9 +59,9 @@ function handleOpenChange(open: boolean) {
 .sheet-overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-overlay);
+  z-index: 300;
   background: rgba(0, 0, 0, 0.5);
-  animation: fadeIn var(--transition-base);
+  animation: fadeIn 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes fadeIn {
@@ -78,14 +78,14 @@ function handleOpenChange(open: boolean) {
   top: 0;
   right: 0;
   bottom: 0;
-  z-index: var(--z-modal);
+  z-index: 400;
   width: 100%;
   max-width: 600px;
   display: flex;
   flex-direction: column;
   background: var(--color-bg-surface);
-  box-shadow: var(--shadow-lg);
-  animation: slideInRight var(--transition-slow);
+  box-shadow: 0 10px 15px -1px rgb(0 0 0 / 0.1);
+  animation: slideInRight 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes slideInRight {
@@ -101,8 +101,8 @@ function handleOpenChange(open: boolean) {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--space-4);
-  padding: var(--space-6);
+  gap: 1rem;
+  padding: 1.5rem;
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -123,7 +123,7 @@ function handleOpenChange(open: boolean) {
 .sheet-description {
   font-size: 0.875rem;
   color: var(--color-text-muted);
-  margin: var(--space-2) 0 0 0;
+  margin: 0.5rem 0 0 0;
   line-height: 1.5;
 }
 
@@ -136,10 +136,10 @@ function handleOpenChange(open: boolean) {
   justify-content: center;
   background: transparent;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: 0.375rem;
   color: var(--color-text-muted);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sheet-close:hover {
@@ -151,15 +151,15 @@ function handleOpenChange(open: boolean) {
 .sheet-body {
   flex: 1;
   overflow-y: auto;
-  padding: var(--space-6);
+  padding: 1.5rem;
 }
 
 .sheet-footer {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--space-3);
-  padding: var(--space-6);
+  gap: 0.75rem;
+  padding: 1.5rem;
   border-top: 1px solid var(--color-border);
   background: var(--color-bg-warm);
 }

@@ -105,13 +105,13 @@ const quantityError = computed(() =>
 .panel {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: 1.5rem;
 }
 
 .panel__title {
   font-family: var(--font-display);
   font-size: 1.75rem;
-  margin: 0 0 var(--space-2);
+  margin: 0 0 0.5rem;
 }
 
 .panel__lead {
@@ -123,7 +123,7 @@ const quantityError = computed(() =>
 .results {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: 1rem;
 }
 
 .field-error,
@@ -137,7 +137,7 @@ const quantityError = computed(() =>
 }
 
 .incomplete__title {
-  margin: 0 0 var(--space-2);
+  margin: 0 0 0.5rem;
   font-size: 1.125rem;
 }
 
@@ -148,7 +148,7 @@ const quantityError = computed(() =>
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity var(--transition-base);
+  transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .fade-enter-from,

@@ -91,11 +91,11 @@ function productName(products: Product[], id: string): string {
 .recipe-list__title {
   font-family: var(--font-display);
   font-size: 1.5rem;
-  margin-bottom: var(--space-4);
+  margin-bottom: 1rem;
 }
 
 .recipe-list__empty {
-  padding: var(--space-8) var(--space-4);
+  padding: 2rem 1rem;
   color: var(--color-text-muted);
   text-align: center;
 }
@@ -112,7 +112,7 @@ function productName(products: Product[], id: string): string {
 
 .recipe-table th,
 .recipe-table td {
-  padding: var(--space-3) var(--space-3);
+  padding: 0.75rem 0.75rem;
   text-align: left;
   border-bottom: 1px solid var(--color-border);
   vertical-align: middle;
@@ -153,6 +153,6 @@ function productName(products: Product[], id: string): string {
 
 .recipe-table__edit {
   min-height: 2.75rem;
-  padding-inline: var(--space-3);
+  padding-inline: 0.75rem;
 }
 </style>

@@ -179,20 +179,20 @@ async function handleFormSubmit(data: UpsertInventoryRequest) {
 .inventory-workspace {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: 1.5rem;
 }
 
 .inventory-controls {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-4);
+  gap: 1rem;
   flex-wrap: wrap;
 }
 
 .inventory-filters {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: 0.75rem;
   flex: 1;
   min-width: 0;
   flex-wrap: wrap;
@@ -212,7 +212,7 @@ async function handleFormSubmit(data: UpsertInventoryRequest) {
 .inventory-count {
   font-size: 0.875rem;
   color: var(--color-text-muted);
-  margin-bottom: var(--space-4);
+  margin-bottom: 1rem;
 }
 
 .inventory-empty {
@@ -220,8 +220,8 @@ async function handleFormSubmit(data: UpsertInventoryRequest) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-4);
-  padding: var(--space-16) var(--space-4);
+  gap: 1rem;
+  padding: 4rem 1rem;
   text-align: center;
 }
 
@@ -238,13 +238,13 @@ async function handleFormSubmit(data: UpsertInventoryRequest) {
 .skeleton-table {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 0.5rem;
 }
 
 .skeleton-row {
   height: 60px;
   background: var(--color-bg-warm);
-  border-radius: var(--radius-md);
+  border-radius: 0.375rem;
   position: relative;
   overflow: hidden;
 }

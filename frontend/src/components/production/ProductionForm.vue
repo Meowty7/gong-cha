@@ -80,12 +80,12 @@ function onSubmit() {
 <style scoped>
 .production-form {
   display: grid;
-  gap: var(--space-5);
+  gap: 1.25rem;
 }
 
 .field {
   display: grid;
-  gap: var(--space-2);
+  gap: 0.5rem;
 }
 
 label {
@@ -106,6 +106,6 @@ label {
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
+  gap: 0.75rem;
 }
 </style>

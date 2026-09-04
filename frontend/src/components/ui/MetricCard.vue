@@ -16,15 +16,15 @@ defineProps<{
 
 <style scoped>
 .metric {
-  padding: var(--space-5);
+  padding: 1.25rem;
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: 0.5rem;
   min-width: 0;
 }
 
 .metric__label {
-  margin: 0 0 var(--space-2);
+  margin: 0 0 0.5rem;
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--color-text-muted);
@@ -40,7 +40,7 @@ defineProps<{
 }
 
 .metric__hint {
-  margin: var(--space-2) 0 0;
+  margin: 0.5rem 0 0;
   font-size: 0.8125rem;
   color: var(--color-text-muted);
 }

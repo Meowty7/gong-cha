@@ -149,7 +149,7 @@ function lineTitle(line: LineExpansion): string {
 .line {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: 1rem;
 }
 
 .block__title,
@@ -167,7 +167,7 @@ function lineTitle(line: LineExpansion): string {
 }
 
 .line {
-  padding-top: var(--space-2);
+  padding-top: 0.5rem;
   border-top: 1px solid var(--color-border);
 }
 
@@ -179,7 +179,7 @@ function lineTitle(line: LineExpansion): string {
 
 .cmp th,
 .cmp td {
-  padding: var(--space-3);
+  padding: 0.75rem;
   text-align: left;
   border-bottom: 1px solid var(--color-border);
   vertical-align: top;
@@ -195,7 +195,7 @@ function lineTitle(line: LineExpansion): string {
 .status {
   display: inline-flex;
   align-items: flex-start;
-  gap: var(--space-2);
+  gap: 0.5rem;
 }
 
 .status--short {
@@ -220,16 +220,16 @@ function lineTitle(line: LineExpansion): string {
   }
 
   .cmp tr {
-    padding: var(--space-3) 0;
+    padding: 0.75rem 0;
     border-bottom: 1px solid var(--color-border);
   }
 
   .cmp td {
     display: grid;
     grid-template-columns: 8rem 1fr;
-    gap: var(--space-2);
+    gap: 0.5rem;
     border: 0;
-    padding: var(--space-1) 0;
+    padding: 0.25rem 0;
   }
 
   .cmp td::before {

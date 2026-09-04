@@ -61,13 +61,13 @@ function unitLabel(unit: string): string {
   caption-side: top;
   text-align: left;
   font-weight: 600;
-  margin-bottom: var(--space-3);
+  margin-bottom: 0.75rem;
   color: var(--color-text);
 }
 
 .req__table th,
 .req__table td {
-  padding: var(--space-3) var(--space-3);
+  padding: 0.75rem 0.75rem;
   text-align: left;
   border-bottom: 1px solid var(--color-border);
   vertical-align: top;
@@ -107,16 +107,16 @@ function unitLabel(unit: string): string {
   }
 
   .req__table tr {
-    padding: var(--space-3) 0;
+    padding: 0.75rem 0;
     border-bottom: 1px solid var(--color-border);
   }
 
   .req__table td {
     display: grid;
     grid-template-columns: 8rem 1fr;
-    gap: var(--space-2);
+    gap: 0.5rem;
     border: 0;
-    padding: var(--space-1) 0;
+    padding: 0.25rem 0;
   }
 
   .req__table td::before {

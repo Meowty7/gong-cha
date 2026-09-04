@@ -239,13 +239,13 @@ function onSubmit() {
 .panel {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: 1.5rem;
 }
 
 .panel__title {
   font-family: var(--font-display);
   font-size: 1.75rem;
-  margin: 0 0 var(--space-2);
+  margin: 0 0 0.5rem;
 }
 
 .panel__lead {
@@ -259,18 +259,18 @@ function onSubmit() {
 .bars {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: 1rem;
 }
 
 .group {
   margin: 0;
-  padding: var(--space-4);
+  padding: 1rem;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: 0.375rem;
 }
 
 .group__legend {
-  padding: 0 var(--space-2);
+  padding: 0 0.5rem;
   font-size: 0.875rem;
   font-weight: 600;
 }
@@ -284,7 +284,7 @@ function onSubmit() {
 .check {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-2);
+  gap: 0.5rem;
   font-size: 0.875rem;
 }
 
@@ -297,7 +297,7 @@ function onSubmit() {
 .override {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-3);
+  gap: 0.75rem;
   align-items: end;
 }
 
@@ -309,7 +309,7 @@ function onSubmit() {
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: 0.5rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -318,8 +318,8 @@ function onSubmit() {
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem 0.25rem 0.75rem;
   background: var(--color-bg-warm);
   border: 1px solid var(--color-border);
   border-radius: 999px;
@@ -336,7 +336,7 @@ function onSubmit() {
   background: transparent;
   color: var(--color-text);
   cursor: pointer;
-  border-radius: var(--radius-sm);
+  border-radius: 0.25rem;
   font-size: 1.25rem;
 }
 
@@ -349,7 +349,7 @@ function onSubmit() {
 .metrics {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-4);
+  gap: 1rem;
 }
 
 .bars__title {
@@ -359,7 +359,7 @@ function onSubmit() {
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity var(--transition-base);
+  transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .fade-enter-from,

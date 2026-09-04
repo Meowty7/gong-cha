@@ -53,7 +53,7 @@ defineProps<Props>();
 .product-table-wrapper {
   overflow-x: auto;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: 0.5rem;
   background: var(--color-bg-surface);
 }
 
@@ -69,7 +69,7 @@ defineProps<Props>();
 }
 
 .product-table th {
-  padding: var(--space-3) var(--space-4);
+  padding: 0.75rem 1rem;
   text-align: left;
   font-weight: 600;
   color: var(--color-text);
@@ -78,7 +78,7 @@ defineProps<Props>();
 
 .product-table tbody tr {
   border-bottom: 1px solid var(--color-border-subtle);
-  transition: background var(--transition-fast);
+  transition: background 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .product-table tbody tr:last-child {
@@ -90,28 +90,28 @@ defineProps<Props>();
 }
 
 .product-table td {
-  padding: var(--space-4);
+  padding: 1rem;
   color: var(--color-text);
 }
 
 .product-table__id code {
   font-family: monospace;
   font-size: 0.8125rem;
-  padding: var(--space-1) var(--space-2);
+  padding: 0.25rem 0.5rem;
   background: var(--color-bg-warm);
-  border-radius: var(--radius-sm);
+  border-radius: 0.25rem;
 }
 
 .product-table__name-wrapper {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: 0.75rem;
 }
 
 .product-table__image {
   width: 2.5rem;
   height: 2.5rem;
-  border-radius: var(--radius-sm);
+  border-radius: 0.25rem;
   object-fit: cover;
 }
 
@@ -136,7 +136,7 @@ defineProps<Props>();
 
   .product-table th,
   .product-table td {
-    padding: var(--space-2) var(--space-3);
+    padding: 0.5rem 0.75rem;
   }
 
   .product-table__description {

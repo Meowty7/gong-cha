@@ -115,22 +115,22 @@ const emit = defineEmits<Emits>();
 .component-row {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-3);
-  padding: var(--space-4);
+  gap: 0.75rem;
+  padding: 1rem;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: 0.375rem;
   background: var(--color-bg-surface);
 }
 
 .field__label {
   display: block;
-  margin-bottom: var(--space-2);
+  margin-bottom: 0.5rem;
   font-size: 0.8125rem;
   font-weight: 600;
 }
 
 .field__error {
-  margin-top: var(--space-1);
+  margin-top: 0.25rem;
   font-size: 0.8125rem;
   color: var(--color-error);
 }

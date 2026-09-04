@@ -268,7 +268,7 @@ onUnmounted(() => {
 .sheet-root {
   position: fixed;
   inset: 0;
-  z-index: var(--z-modal);
+  z-index: 400;
 }
 
 .sheet-backdrop {
@@ -288,21 +288,21 @@ onUnmounted(() => {
   overflow: auto;
   background: var(--color-bg-surface);
   border-left: 1px solid var(--color-border);
-  box-shadow: var(--shadow-lg);
-  animation: sheet-in var(--transition-slow) ease;
+  box-shadow: 0 10px 15px -1px rgb(0 0 0 / 0.1);
+  animation: sheet-in 300ms cubic-bezier(0.4, 0, 0.2, 1) ease;
 }
 
 .sheet-header,
 .sheet-form,
 .sheet-alert {
-  padding: var(--space-6);
+  padding: 1.5rem;
 }
 
 .sheet-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: var(--space-4);
+  gap: 1rem;
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -320,30 +320,30 @@ onUnmounted(() => {
 }
 
 .sheet-alert {
-  margin: 0 var(--space-6);
-  padding: var(--space-4);
+  margin: 0 1.5rem;
+  padding: 1rem;
   color: var(--color-error);
   background: #fef2f2;
   border: 1px solid #f0b4b2;
-  border-radius: var(--radius-md);
+  border-radius: 0.375rem;
 }
 
 .sheet-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
-  padding-bottom: var(--space-10);
+  gap: 1.25rem;
+  padding-bottom: 2.5rem;
 }
 
 .field__label {
   display: block;
-  margin-bottom: var(--space-2);
+  margin-bottom: 0.5rem;
   font-size: 0.8125rem;
   font-weight: 600;
 }
 
 .field__error {
-  margin-top: var(--space-1);
+  margin-top: 0.25rem;
   font-size: 0.8125rem;
   color: var(--color-error);
 }
@@ -351,13 +351,13 @@ onUnmounted(() => {
 .field-row {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-4);
+  gap: 1rem;
 }
 
 .components {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: 0.75rem;
   margin: 0;
   padding: 0;
   border: 0;
@@ -365,7 +365,7 @@ onUnmounted(() => {
 
 .components legend {
   font-weight: 600;
-  margin-bottom: var(--space-2);
+  margin-bottom: 0.5rem;
 }
 
 .components__hint {
@@ -376,7 +376,7 @@ onUnmounted(() => {
 .sheet-footer {
   display: flex;
   justify-content: flex-end;
-  gap: var(--space-3);
+  gap: 0.75rem;
 }
 
 @keyframes sheet-in {

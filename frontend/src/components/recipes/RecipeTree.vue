@@ -48,20 +48,20 @@ function productName(products: Product[], id: string): string {
 <style scoped>
 .recipe-tree {
   margin: 0;
-  padding-left: var(--space-5);
+  padding-left: 1.25rem;
   list-style: none;
   border-left: 1px solid var(--color-border);
 }
 
 .recipe-tree__item {
-  margin: var(--space-2) 0;
+  margin: 0.5rem 0;
 }
 
 .recipe-tree__row {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--space-2) var(--space-3);
+  gap: 0.5rem 0.75rem;
 }
 
 .recipe-tree__name {

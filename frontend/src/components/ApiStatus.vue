@@ -86,8 +86,8 @@ onMounted(() => {
 
 <style scoped>
 .api-status {
-  padding: var(--space-4);
-  border-radius: var(--radius-md);
+  padding: 1rem;
+  border-radius: 0.375rem;
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
 }
@@ -95,7 +95,7 @@ onMounted(() => {
 .status-indicator {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: 0.75rem;
 }
 
 .status-dot {
@@ -103,7 +103,7 @@ onMounted(() => {
   width: 0.75rem;
   height: 0.75rem;
   border-radius: 50%;
-  transition: background-color var(--transition-base);
+  transition: background-color 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dot-loading {
@@ -144,32 +144,32 @@ onMounted(() => {
 .status-version {
   font-weight: 400;
   color: var(--color-text-muted);
-  margin-left: var(--space-2);
+  margin-left: 0.5rem;
 }
 
 .status-error {
-  margin-top: var(--space-4);
-  padding-top: var(--space-4);
+  margin-top: 1rem;
+  padding-top: 1rem;
   border-top: 1px solid var(--color-border);
 }
 
 .error-message {
   font-size: 0.875rem;
   color: var(--color-error);
-  margin-bottom: var(--space-2);
+  margin-bottom: 0.5rem;
 }
 
 .error-hint {
   font-size: 0.8125rem;
   color: var(--color-text-muted);
-  margin-bottom: var(--space-4);
+  margin-bottom: 1rem;
 }
 
 .error-hint code {
   display: inline-block;
-  padding: var(--space-1) var(--space-2);
+  padding: 0.25rem 0.5rem;
   background: var(--color-bg-warm);
-  border-radius: var(--radius-sm);
+  border-radius: 0.25rem;
   font-family: 'Monaco', 'Courier New', monospace;
   font-size: 0.75rem;
 }
@@ -177,15 +177,15 @@ onMounted(() => {
 .btn-retry {
   display: inline-flex;
   align-items: center;
-  padding: var(--space-2) var(--space-4);
+  padding: 0.5rem 1rem;
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--color-primary);
   background: transparent;
   border: 1px solid var(--color-primary);
-  border-radius: var(--radius-sm);
+  border-radius: 0.25rem;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-retry:hover {

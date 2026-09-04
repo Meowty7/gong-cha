@@ -62,11 +62,11 @@ function handleDismiss() {
 .error-banner {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-3);
-  padding: var(--space-4);
+  gap: 0.75rem;
+  padding: 1rem;
   background: #fef2f2;
   border: 1px solid #fca5a5;
-  border-radius: var(--radius-md);
+  border-radius: 0.375rem;
   color: var(--color-error);
 }
 
@@ -96,12 +96,12 @@ function handleDismiss() {
   justify-content: center;
   background: transparent;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: 0.25rem;
   color: var(--color-error);
   font-size: 1.5rem;
   line-height: 1;
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: background 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .error-banner__dismiss:hover {

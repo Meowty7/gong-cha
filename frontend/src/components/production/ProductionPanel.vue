@@ -106,7 +106,7 @@ onMounted(() => {
 <style scoped>
 .panel {
   display: grid;
-  gap: var(--space-6);
+  gap: 1.5rem;
 }
 
 .status {
@@ -117,11 +117,11 @@ onMounted(() => {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-4);
+  gap: 0.75rem;
+  padding: 1rem;
   background: #fef2f2;
   border: 1px solid #fca5a5;
-  border-radius: var(--radius-md);
+  border-radius: 0.375rem;
   color: var(--color-error);
 }
 

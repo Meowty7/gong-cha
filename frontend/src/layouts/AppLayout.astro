@@ -23,146 +23,33 @@ const {
     <meta name="generator" content={Astro.generator} />
     
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
     
     <title>{title}</title>
   </head>
   
-  <body>
+  <body class="min-h-screen bg-(--color-bg-warm) text-(--color-text)">
     <a href="#main-content" class="skip-link">
       {es.app.skipToMain}
     </a>
     
-    <div class="app-shell">
-      <!-- Desktop sidebar -->
-      <aside class="app-sidebar">
+    <div class="grid min-h-screen grid-cols-1 md:grid-cols-[16rem_1fr] lg:grid-cols-[18rem_1fr]">
+      <aside class="hidden h-screen overflow-y-auto border-r border-(--color-border) bg-(--color-bg-surface) md:sticky md:top-0 md:block">
         <AppSidebar />
       </aside>
       
-      <!-- Mobile header -->
-      <header class="app-header-mobile">
-        <div class="mobile-header-content">
-          <h1 class="mobile-logo">Gong Cha</h1>
-          <button 
-            type="button" 
-            class="mobile-menu-toggle"
-            aria-label="Abrir menú"
-            aria-expanded="false"
-          >
-            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-          </button>
+      <details class="group sticky top-0 z-200 border-b border-(--color-border) bg-(--color-bg-surface) md:hidden">
+        <summary class="flex min-h-16 cursor-pointer list-none items-center justify-between px-4 font-(--font-display) text-2xl text-(--color-primary)">
+          Gong Cha
+          <span class="text-lg text-(--color-text-muted) transition group-open:rotate-180" aria-hidden="true">⌄</span>
+        </summary>
+        <div class="border-t border-(--color-border) px-2 pb-3">
+          <AppSidebar />
         </div>
-      </header>
+      </details>
       
-      <!-- Main content area -->
-      <main id="main-content" class="app-main">
+      <main id="main-content" class="min-w-0 bg-(--color-bg-warm) px-4 py-6 sm:px-6 md:px-8 md:py-10 lg:px-10">
         <slot />
       </main>
     </div>
   </body>
 </html>
-
-<style>
-  .app-shell {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
-    min-height: 100vh;
-  }
-  
-  /* Desktop sidebar */
-  .app-sidebar {
-    display: none;
-  }
-  
-  /* Mobile header */
-  .app-header-mobile {
-    position: sticky;
-    top: 0;
-    z-index: var(--z-sticky);
-    background: var(--color-bg-surface);
-    border-bottom: 1px solid var(--color-border);
-  }
-  
-  .mobile-header-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--space-4);
-  }
-  
-  .mobile-logo {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    color: var(--color-primary);
-    margin: 0;
-  }
-  
-  .mobile-menu-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    padding: 0;
-    background: transparent;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    color: var(--color-text);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-  }
-  
-  .mobile-menu-toggle:hover {
-    background: var(--color-bg-hover);
-    border-color: var(--color-text-muted);
-  }
-  
-  /* Main content */
-  .app-main {
-    padding: var(--space-6) var(--space-4);
-    background: var(--color-bg-warm);
-  }
-  
-  /* Desktop layout (768px and up) */
-  @media (min-width: 768px) {
-    .app-shell {
-      grid-template-columns: 16rem 1fr;
-      grid-template-rows: 1fr;
-    }
-    
-    .app-sidebar {
-      display: block;
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      overflow-y: auto;
-      background: var(--color-bg-surface);
-      border-right: 1px solid var(--color-border);
-    }
-    
-    .app-header-mobile {
-      display: none;
-    }
-    
-    .app-main {
-      padding: var(--space-8) var(--space-6);
-      max-width: 1440px;
-    }
-  }
-  
-  /* Wide desktop (1024px and up) */
-  @media (min-width: 1024px) {
-    .app-shell {
-      grid-template-columns: 18rem 1fr;
-    }
-    
-    .app-main {
-      padding: var(--space-10) var(--space-8);
-    }
-  }
-</style>

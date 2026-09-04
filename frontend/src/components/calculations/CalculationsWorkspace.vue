@@ -58,7 +58,7 @@ onMounted(() => {
 .workspace {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: 1.5rem;
 }
 
 .workspace__status {
@@ -69,7 +69,7 @@ onMounted(() => {
 .workspace__grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-8);
+  gap: 2rem;
 }
 
 @media (min-width: 1024px) {

@@ -69,7 +69,7 @@ function barWidth(after: string, before: string): string {
 <style scoped>
 .comparison {
   display: grid;
-  gap: var(--space-3);
+  gap: 0.75rem;
 }
 
 .heading {
@@ -89,7 +89,7 @@ function barWidth(after: string, before: string): string {
 
 th,
 td {
-  padding: var(--space-3);
+  padding: 0.75rem;
   border-bottom: 1px solid var(--color-border);
   text-align: left;
   vertical-align: middle;
@@ -114,7 +114,7 @@ td {
 .bar-row {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 0.5rem;
 }
 
 .icon {

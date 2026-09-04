@@ -54,7 +54,7 @@ const emit = defineEmits<Emits>();
 .inventory-table-wrapper {
   overflow-x: auto;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: 0.5rem;
   background: var(--color-bg-surface);
 }
 
@@ -70,7 +70,7 @@ const emit = defineEmits<Emits>();
 }
 
 .inventory-table th {
-  padding: var(--space-3) var(--space-4);
+  padding: 0.75rem 1rem;
   text-align: left;
   font-weight: 600;
   color: var(--color-text);
@@ -79,7 +79,7 @@ const emit = defineEmits<Emits>();
 
 .inventory-table tbody tr {
   border-bottom: 1px solid var(--color-border-subtle);
-  transition: background var(--transition-fast);
+  transition: background 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .inventory-table tbody tr:last-child {
@@ -91,16 +91,16 @@ const emit = defineEmits<Emits>();
 }
 
 .inventory-table td {
-  padding: var(--space-4);
+  padding: 1rem;
   color: var(--color-text);
 }
 
 .inventory-table__id code {
   font-family: monospace;
   font-size: 0.8125rem;
-  padding: var(--space-1) var(--space-2);
+  padding: 0.25rem 0.5rem;
   background: var(--color-bg-warm);
-  border-radius: var(--radius-sm);
+  border-radius: 0.25rem;
 }
 
 .inventory-table__quantity {
@@ -114,15 +114,15 @@ const emit = defineEmits<Emits>();
 }
 
 .btn-adjust {
-  padding: var(--space-2) var(--space-4);
+  padding: 0.5rem 1rem;
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--color-primary);
   background: transparent;
   border: 1px solid var(--color-primary);
-  border-radius: var(--radius-sm);
+  border-radius: 0.25rem;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-adjust:hover {
@@ -138,11 +138,11 @@ const emit = defineEmits<Emits>();
 
   .inventory-table th,
   .inventory-table td {
-    padding: var(--space-2) var(--space-3);
+    padding: 0.5rem 0.75rem;
   }
   
   .btn-adjust {
-    padding: var(--space-1) var(--space-3);
+    padding: 0.25rem 0.75rem;
     font-size: 0.75rem;
   }
 }

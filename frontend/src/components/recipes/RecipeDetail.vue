@@ -79,15 +79,15 @@ function productName(products: Product[], id: string): string {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: var(--space-4);
+  gap: 1rem;
   flex-wrap: wrap;
-  margin-bottom: var(--space-6);
+  margin-bottom: 1.5rem;
 }
 
 .recipe-detail__title {
   font-family: var(--font-display);
   font-size: 2rem;
-  margin-bottom: var(--space-2);
+  margin-bottom: 0.5rem;
 }
 
 .recipe-detail__meta,
@@ -96,14 +96,14 @@ function productName(products: Product[], id: string): string {
 }
 
 .recipe-detail__id {
-  margin-left: var(--space-2);
+  margin-left: 0.5rem;
   font-size: 0.875rem;
 }
 
 .recipe-detail__tree-title {
   font-family: var(--font-display);
   font-size: 1.25rem;
-  margin-bottom: var(--space-3);
+  margin-bottom: 0.75rem;
 }
 
 .recipe-detail__tree {
@@ -118,8 +118,8 @@ function productName(products: Product[], id: string): string {
 
 .skeleton-line {
   height: 1.25rem;
-  margin-bottom: var(--space-3);
-  border-radius: var(--radius-sm);
+  margin-bottom: 0.75rem;
+  border-radius: 0.25rem;
   background: var(--color-bg-warm);
 }
 

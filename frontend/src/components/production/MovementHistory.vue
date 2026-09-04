@@ -63,7 +63,7 @@ function formatWhen(value: string): string {
 <style scoped>
 .history {
   display: grid;
-  gap: var(--space-4);
+  gap: 1rem;
 }
 
 h3 {
@@ -87,7 +87,7 @@ h3 {
 
 th,
 td {
-  padding: var(--space-3);
+  padding: 0.75rem;
   border-bottom: 1px solid var(--color-border);
   text-align: left;
   white-space: nowrap;
