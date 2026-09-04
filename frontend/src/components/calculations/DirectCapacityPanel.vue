@@ -8,7 +8,6 @@ import ErrorBanner from '../ErrorBanner.vue';
 import ProductSelect from '../ui/ProductSelect.vue';
 import QuantityField from '../ui/QuantityField.vue';
 import RequirementTable from '../ui/RequirementTable.vue';
-import MetricCard from '../ui/MetricCard.vue';
 import StockBar from '../ui/StockBar.vue';
 
 const props = defineProps<{
@@ -40,6 +39,10 @@ const useDirectPick = ref('');
 
 const producible = computed(() =>
   props.products.filter((product) => product.type !== 'raw_material')
+);
+
+const selectedProduct = computed(() =>
+  props.products.find((product) => product.product_id === productId.value)
 );
 
 const leftoverBars = computed(() => {
@@ -110,76 +113,87 @@ function onSubmit() {
         id="direct-product"
         v-model="productId"
         :products="producible"
-        :label="es.calculations.product"
+        :label="es.calculations.productToPrepare"
         required
       />
 
-      <fieldset class="group">
-        <legend class="group__legend">{{ es.calculations.inventoryOverrides }}</legend>
-        <p class="group__hint">{{ es.calculations.overrideHint }}</p>
-        <label class="check">
-          <input v-model="replaceInventory" type="checkbox" />
-          <span>{{ es.calculations.replaceInventory }}</span>
-        </label>
-        <div
-          v-for="row in overrides"
-          :key="row.key"
-          class="override"
-        >
-          <ProductSelect
-            :id="`${row.key}-product`"
-            v-model="row.productId"
-            :products="products"
-            :label="es.calculations.product"
-          />
-          <QuantityField
-            :id="`${row.key}-qty`"
-            v-model="row.quantity"
-            :label="es.calculations.quantity"
-          />
-          <button
-            type="button"
-            class="btn btn-secondary icon-btn"
-            :aria-label="es.calculations.removeOverride"
-            @click="removeOverride(row.key)"
-          >
-            {{ es.actions.remove }}
-          </button>
-        </div>
-        <button type="button" class="btn btn-secondary" @click="addOverride">
-          {{ es.calculations.addOverride }}
-        </button>
-      </fieldset>
-
-      <fieldset class="group">
-        <legend class="group__legend">{{ es.calculations.useDirect }}</legend>
-        <p class="group__hint">{{ es.calculations.useDirectHint }}</p>
-        <div class="override">
-          <ProductSelect
-            id="use-direct-pick"
-            v-model="useDirectPick"
-            :products="products"
-            :types="['semi_finished']"
-            :label="es.calculations.product"
-          />
-          <button type="button" class="btn btn-secondary" @click="confirmUseDirect">
-            {{ es.calculations.addUseDirect }}
-          </button>
-        </div>
-        <ul v-if="useDirect.length" class="chips">
-          <li v-for="id in useDirect" :key="id" class="chip">
-            <span>{{ id }}{{ productNames[id] ? ` — ${productNames[id]}` : '' }}</span>
-            <button
-              type="button"
-              class="chip__remove"
-              :aria-label="`${es.calculations.removeUseDirect}: ${id}`"
-              @click="removeUseDirect(id)"
+      <details class="advanced">
+        <summary class="advanced__summary">
+          <span>
+            <strong>{{ es.calculations.advancedOptions }}</strong>
+            <small>{{ es.calculations.advancedHint }}</small>
+          </span>
+          <span aria-hidden="true">+</span>
+        </summary>
+        <div class="advanced__content">
+          <fieldset class="group">
+            <legend class="group__legend">{{ es.calculations.inventoryOverrides }}</legend>
+            <p class="group__hint">{{ es.calculations.overrideHint }}</p>
+            <label class="check">
+              <input v-model="replaceInventory" type="checkbox" />
+              <span>{{ es.calculations.replaceInventory }}</span>
+            </label>
+            <div
+              v-for="row in overrides"
+              :key="row.key"
+              class="override"
             >
-              ×
+              <ProductSelect
+                :id="`${row.key}-product`"
+                v-model="row.productId"
+                :products="products"
+                :label="es.calculations.product"
+              />
+              <QuantityField
+                :id="`${row.key}-qty`"
+                v-model="row.quantity"
+                :label="es.calculations.quantity"
+              />
+              <button
+                type="button"
+                class="btn btn-secondary icon-btn"
+                :aria-label="es.calculations.removeOverride"
+                @click="removeOverride(row.key)"
+              >
+                {{ es.actions.remove }}
+              </button>
+            </div>
+            <button type="button" class="btn btn-secondary" @click="addOverride">
+              {{ es.calculations.addOverride }}
             </button>
-          </li>
-        </ul>
-      </fieldset>
+          </fieldset>
+
+          <fieldset class="group">
+            <legend class="group__legend">{{ es.calculations.useDirect }}</legend>
+            <p class="group__hint">{{ es.calculations.useDirectHint }}</p>
+            <div class="override">
+              <ProductSelect
+                id="use-direct-pick"
+                v-model="useDirectPick"
+                :products="products"
+                :types="['semi_finished']"
+                :label="es.calculations.product"
+              />
+              <button type="button" class="btn btn-secondary" @click="confirmUseDirect">
+                {{ es.calculations.addUseDirect }}
+              </button>
+            </div>
+            <ul v-if="useDirect.length" class="chips">
+              <li v-for="id in useDirect" :key="id" class="chip">
+                <span>{{ id }}{{ productNames[id] ? ` — ${productNames[id]}` : '' }}</span>
+                <button
+                  type="button"
+                  class="chip__remove"
+                  :aria-label="`${es.calculations.removeUseDirect}: ${id}`"
+                  @click="removeUseDirect(id)"
+                >
+                  ×
+                </button>
+              </li>
+            </ul>
+          </fieldset>
+        </div>
+      </details>
 
       <p v-if="fieldError" class="field-error" role="alert">{{ fieldError }}</p>
 
@@ -188,7 +202,7 @@ function onSubmit() {
         class="btn btn-primary"
         :disabled="!canSubmit"
       >
-        {{ pending ? es.actions.loading : es.actions.calculate }}
+        {{ pending ? es.actions.loading : es.calculations.calculateCapacity }}
       </button>
     </form>
 
@@ -200,35 +214,38 @@ function onSubmit() {
         :aria-label="es.calculations.results"
         aria-live="polite"
       >
-        <div class="metrics">
-          <MetricCard
-            :label="es.calculations.maxUnits"
-            :value="result.max_units"
-            :hint="es.calculations.unitsComplete"
-          />
-          <MetricCard
-            :label="es.calculations.limitingComponent"
-            :value="result.limiting_component || es.calculations.none"
-            :hint="limitingHint()"
-          />
+        <div class="answer">
+          <p class="answer__label">{{ es.calculations.resultLabel }}</p>
+          <h3 class="answer__value">
+            {{ es.calculations.capacityAnswer }}
+            <strong class="tabular-nums">{{ result.max_units }}</strong>
+            {{ es.calculations.unitsComplete }}
+            <template v-if="selectedProduct"> de {{ selectedProduct.name }}</template>.
+          </h3>
+          <p v-if="result.limiting_component" class="answer__hint">
+            {{ es.calculations.limitedBy }}: {{ limitingHint() }}.
+          </p>
         </div>
-        <RequirementTable
-          :rows="result.leftovers"
-          :caption="es.calculations.leftoversCaption"
-          :product-names="productNames"
-          :empty-text="es.calculations.noLeftovers"
-        />
-        <div v-if="leftoverBars.length" class="bars">
-          <h3 class="bars__title">{{ es.calculations.leftovers }}</h3>
-          <StockBar
-            v-for="bar in leftoverBars"
-            :key="bar.id"
-            :label="bar.label"
-            :current="bar.current"
-            :max="bar.max"
-            :status-text="bar.statusText"
-            :depleted="bar.depleted"
+
+        <div class="leftovers">
+          <RequirementTable
+            :rows="result.leftovers"
+            :caption="es.calculations.leftoversCaption"
+            :product-names="productNames"
+            :empty-text="es.calculations.noLeftovers"
           />
+          <div v-if="leftoverBars.length" class="bars">
+            <h3 class="bars__title">{{ es.calculations.leftovers }}</h3>
+            <StockBar
+              v-for="bar in leftoverBars"
+              :key="bar.id"
+              :label="bar.label"
+              :current="bar.current"
+              :max="bar.max"
+              :status-text="bar.statusText"
+              :depleted="bar.depleted"
+            />
+          </div>
         </div>
       </div>
     </Transition>
@@ -243,7 +260,8 @@ function onSubmit() {
 }
 
 .panel__title {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
+  font-weight: 700;
   font-size: 1.75rem;
   margin: 0 0 0.5rem;
 }
@@ -262,11 +280,55 @@ function onSubmit() {
   gap: 1rem;
 }
 
+.advanced {
+  border: 1px solid var(--color-border);
+}
+
+.advanced__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  cursor: pointer;
+}
+
+.advanced__summary:hover {
+  background: var(--color-bg-hover);
+}
+
+.advanced__summary span:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.advanced__summary small {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+}
+
+.advanced[open] .advanced__summary > span:last-child {
+  rotate: 45deg;
+}
+
+.advanced__content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0 1rem 1rem;
+}
+
+.leftovers {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .group {
   margin: 0;
   padding: 1rem;
   border: 1px solid var(--color-border);
-  border-radius: 0.375rem;
 }
 
 .group__legend {
@@ -322,7 +384,6 @@ function onSubmit() {
   padding: 0.25rem 0.5rem 0.25rem 0.75rem;
   background: var(--color-bg-warm);
   border: 1px solid var(--color-border);
-  border-radius: 999px;
   font-size: 0.8125rem;
 }
 
@@ -336,20 +397,38 @@ function onSubmit() {
   background: transparent;
   color: var(--color-text);
   cursor: pointer;
-  border-radius: 0.25rem;
   font-size: 1.25rem;
 }
 
-.field-error {
-  margin: 0;
-  color: var(--color-error);
-  font-size: 0.875rem;
+.answer {
+  padding: 1rem;
+  background: var(--color-primary-soft);
+  border-left: 3px solid var(--color-primary);
 }
 
-.metrics {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
+.answer__label {
+  margin: 0;
+  color: var(--color-primary-dark);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.answer__value {
+  margin: 0.375rem 0 0;
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+.answer__value strong {
+  font-size: 1.75rem;
+}
+
+.answer__hint {
+  margin: 0.375rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
 }
 
 .bars__title {
@@ -372,8 +451,5 @@ function onSubmit() {
     grid-template-columns: minmax(0, 1fr) 10rem auto;
   }
 
-  .metrics {
-    grid-template-columns: 1fr 1fr;
-  }
 }
 </style>

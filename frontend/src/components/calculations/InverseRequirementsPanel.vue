@@ -29,6 +29,17 @@ const producible = computed(() =>
   props.products.filter((product) => product.type !== 'raw_material')
 );
 
+const selectedProduct = computed(() =>
+  props.products.find((product) => product.product_id === productId.value)
+);
+
+const selectedUnit = computed(() => {
+  const unit = selectedProduct.value?.unit;
+  if (!unit) return '';
+  if ((unit === 'unit' || unit === 'unidad') && Number(quantity.value) !== 1) return 'unidades';
+  return (es.units as Record<string, string>)[unit] ?? unit;
+});
+
 const quantityError = computed(() =>
   fieldError.value === es.calculations.invalidQuantity ? fieldError.value : ''
 );
@@ -48,14 +59,15 @@ const quantityError = computed(() =>
         id="inverse-product"
         v-model="productId"
         :products="producible"
-        :label="es.calculations.product"
+        :label="es.calculations.productToPrepare"
         required
       />
       <QuantityField
         id="inverse-quantity"
         v-model="quantity"
-        :label="es.calculations.quantity"
+        :label="es.calculations.quantityToProduce"
         :error="quantityError"
+        :unit="selectedUnit"
         required
       />
       <p
@@ -66,7 +78,7 @@ const quantityError = computed(() =>
         {{ fieldError }}
       </p>
       <button type="submit" class="btn btn-primary" :disabled="!canSubmit">
-        {{ pending ? es.actions.loading : es.actions.calculate }}
+        {{ pending ? es.actions.loading : es.calculations.calculateRequirements }}
       </button>
     </form>
 
@@ -78,16 +90,29 @@ const quantityError = computed(() =>
         :aria-label="es.calculations.results"
         aria-live="polite"
       >
-        <RequirementTable
-          :rows="result.immediate"
-          :caption="es.calculations.immediateCaption"
-          :product-names="productNames"
-        />
+        <div class="answer">
+          <p class="answer__label">{{ es.calculations.resultLabel }}</p>
+          <h3 class="answer__value">
+            {{ es.calculations.requirementsAnswer }}
+            <strong class="tabular-nums">{{ quantity }} {{ selectedUnit }}</strong>
+            <template v-if="selectedProduct"> de {{ selectedProduct.name }}</template>.
+          </h3>
+        </div>
         <RequirementTable
           :rows="result.raw_materials"
-          :caption="es.calculations.rawMaterialsCaption"
+          :caption="es.calculations.totalRequirements"
           :product-names="productNames"
         />
+        <details class="result-detail">
+          <summary>{{ es.calculations.recipeDetail }}</summary>
+          <div class="result-detail__content">
+            <RequirementTable
+              :rows="result.immediate"
+              :caption="es.calculations.immediateCaption"
+              :product-names="productNames"
+            />
+          </div>
+        </details>
         <div v-if="result.incomplete?.length" class="incomplete" role="status">
           <h3 class="incomplete__title">{{ es.calculations.incomplete }}</h3>
           <ul>
@@ -109,7 +134,8 @@ const quantityError = computed(() =>
 }
 
 .panel__title {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
+  font-weight: 700;
   font-size: 1.75rem;
   margin: 0 0 0.5rem;
 }
@@ -126,14 +152,52 @@ const quantityError = computed(() =>
   gap: 1rem;
 }
 
-.field-error,
+.answer {
+  padding: 1rem;
+  background: var(--color-primary-soft);
+  border-left: 3px solid var(--color-primary);
+}
+
+.answer__label {
+  margin: 0;
+  color: var(--color-primary-dark);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.answer__value {
+  margin: 0.375rem 0 0;
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+.answer__value strong {
+  font-size: 1.375rem;
+}
+
+.result-detail {
+  border: 1px solid var(--color-border);
+}
+
+.result-detail > summary {
+  padding: 0.875rem 1rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.result-detail > summary:hover {
+  background: var(--color-bg-hover);
+}
+
+.result-detail__content {
+  padding: 0 1rem 1rem;
+}
+
 .incomplete {
   margin: 0;
   font-size: 0.875rem;
-}
-
-.field-error {
-  color: var(--color-error);
 }
 
 .incomplete__title {
