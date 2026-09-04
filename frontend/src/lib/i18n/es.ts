@@ -115,6 +115,9 @@ export const es = {
     clear: 'Limpiar',
     submit: 'Enviar',
     loading: 'Cargando...',
+    add: 'Añadir',
+    remove: 'Quitar',
+    calculate: 'Calcular',
   },
 
   // ============================================================================
@@ -213,6 +216,7 @@ export const es = {
     warning: 'Advertencia',
     info: 'Información',
     productImage: 'Imagen del producto',
+    dismissError: 'Cerrar aviso de error',
   },
 
   // ============================================================================
@@ -251,6 +255,50 @@ export const es = {
     chooseComponent: 'Seleccionar componente',
     validationSummary: 'Corrige los errores del formulario',
     componentCount: 'componentes',
+  },
+
+  // ============================================================================
+  // Calculations
+  // ============================================================================
+  calculations: {
+    title: 'Cálculos',
+    description: 'Capacidad directa a partir del inventario y requerimientos inversos por receta',
+    directTitle: 'Capacidad directa',
+    directDescription: 'Unidades completas que se pueden producir con el inventario actual o una instantánea sustituida',
+    inverseTitle: 'Requerimientos inversos',
+    inverseDescription: 'Componentes inmediatos y materias primas necesarias para una cantidad pedida',
+    product: 'Producto',
+    productId: 'ID',
+    productPlaceholder: 'Seleccionar producto',
+    quantity: 'Cantidad',
+    results: 'Resultado',
+    maxUnits: 'Unidades máximas',
+    limitingComponent: 'Componente limitante',
+    leftovers: 'Sobrantes',
+    leftoversCaption: 'Sobrantes de inventario después de producir el máximo de unidades completas',
+    immediate: 'Componentes inmediatos',
+    immediateCaption: 'Componentes directos de la receta, sin expandir semiterminados',
+    rawMaterials: 'Materias primas',
+    rawMaterialsCaption: 'Requerimientos expandidos hasta materia prima',
+    incomplete: 'Recetas incompletas',
+    inventoryOverrides: 'Sustituciones de inventario',
+    overrideHint: 'Cada fila reemplaza la existencia de un producto en la instantánea enviada al cálculo',
+    addOverride: 'Añadir sustitución',
+    removeOverride: 'Quitar sustitución',
+    replaceInventory: 'Usar solo estas existencias (ignorar inventario oficial)',
+    useDirect: 'Consumir semiterminado del inventario',
+    useDirectHint: 'Los productos listados no se expanden a materia prima; se descuentan de existencias',
+    addUseDirect: 'Añadir a uso directo',
+    removeUseDirect: 'Quitar uso directo',
+    noLeftovers: 'No hay sobrantes que mostrar',
+    noRequirements: 'Sin requerimientos',
+    leftoverOf: 'Quedan {current} de {max} {unit}',
+    exhausted: 'Agotado',
+    selectProduct: 'Selecciona un producto',
+    invalidQuantity: 'Indica una cantidad mayor que cero',
+    invalidOverride: 'Cada sustitución necesita producto y una cantidad numérica (cero o más)',
+    unitsComplete: 'unidades completas',
+    none: 'Ninguno',
   },
 } as const;
 
