@@ -1,20 +1,27 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { Product } from '../types/api';
+import { productImageSrc } from '../lib/productImage';
 import { es } from '../lib/i18n/es';
 
 interface Props {
   product: Product;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
+const emit = defineEmits<{
+  edit: [product: Product];
+  delete: [product: Product];
+}>();
+const imageSrc = computed(() => productImageSrc(props.product.image_ref));
 </script>
 
 <template>
   <article class="product-card">
     <div class="product-card__image-wrapper">
       <img
-        v-if="product.image_ref"
-        :src="`/img/${product.image_ref}`"
+        v-if="imageSrc"
+        :src="imageSrc"
         :alt="product.name"
         class="product-card__image"
         loading="lazy"
@@ -37,6 +44,14 @@ defineProps<Props>();
       <p v-if="product.description" class="product-card__description">
         {{ product.description }}
       </p>
+      <div class="product-card__actions">
+        <button type="button" class="btn btn-secondary" @click="emit('edit', product)">
+          {{ es.actions.edit }}
+        </button>
+        <button type="button" class="btn btn-secondary" @click="emit('delete', product)">
+          {{ es.actions.delete }}
+        </button>
+      </div>
     </div>
   </article>
 </template>
@@ -47,14 +62,17 @@ defineProps<Props>();
   flex-direction: column;
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
-  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
 }
 
 .product-card:hover {
-  border-color: var(--color-text-muted);
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  border-color: var(--color-border);
+  box-shadow: var(--shadow-md);
 }
 
 .product-card__image-wrapper {
@@ -77,7 +95,8 @@ defineProps<Props>();
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
+  font-weight: 700;
   font-size: 3rem;
   color: var(--color-text-subtle);
 }
@@ -117,9 +136,9 @@ defineProps<Props>();
   padding: 0.25rem 0.75rem;
   font-size: 0.75rem;
   font-weight: 600;
-  background: var(--color-bg-warm);
-  color: var(--color-text-muted);
-  border-radius: 0.25rem;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+  border-radius: var(--radius-pill);
 }
 
 .product-card__unit {
@@ -137,5 +156,11 @@ defineProps<Props>();
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.product-card__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
 }
 </style>

@@ -13,6 +13,7 @@ interface Props {
 interface Emits {
   (e: 'submit', data: CreateProductRequest | UpdateProductRequest): void;
   (e: 'cancel'): void;
+  (e: 'delete'): void;
 }
 
 const props = defineProps<Props>();
@@ -71,7 +72,7 @@ function handleSubmit() {
     const updates: UpdateProductRequest = {
       name: name.value.trim(),
       type: type.value,
-      unit: unit.value,
+      unit: props.product?.unit,
       description: description.value.trim() || undefined,
       image_ref: imageRef.value.trim() || undefined,
     };
@@ -140,40 +141,41 @@ function handleCancel() {
       </p>
     </div>
 
-    <!-- Type -->
-    <div class="form-field">
-      <label for="product-type" class="form-label">
-        {{ es.product.type }}
-        <span class="form-label__required">*</span>
-      </label>
-      <select
-        id="product-type"
-        v-model="type"
-        class="input"
-        :disabled="loading"
-      >
-        <option value="raw_material">{{ es.productType.raw_material }}</option>
-        <option value="semi_finished">{{ es.productType.semi_finished }}</option>
-        <option value="finished_product">{{ es.productType.finished_product }}</option>
-      </select>
-    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label for="product-type" class="form-label">
+          {{ es.product.type }}
+          <span class="form-label__required">*</span>
+        </label>
+        <select
+          id="product-type"
+          v-model="type"
+          class="input"
+          :disabled="loading"
+        >
+          <option value="raw_material">{{ es.productType.raw_material }}</option>
+          <option value="semi_finished">{{ es.productType.semi_finished }}</option>
+          <option value="finished_product">{{ es.productType.finished_product }}</option>
+        </select>
+      </div>
 
-    <!-- Unit -->
-    <div class="form-field">
-      <label for="product-unit" class="form-label">
-        {{ es.product.unit }}
-        <span class="form-label__required">*</span>
-      </label>
-      <select
-        id="product-unit"
-        v-model="unit"
-        class="input"
-        :disabled="loading"
-      >
-        <option value="g">{{ es.units.g }}</option>
-        <option value="ml">{{ es.units.ml }}</option>
-        <option value="unit">{{ es.units.unidad }}</option>
-      </select>
+      <div class="form-field">
+        <label for="product-unit" class="form-label">
+          {{ es.product.unit }}
+          <span class="form-label__required">*</span>
+        </label>
+        <select
+          id="product-unit"
+          v-model="unit"
+          class="input"
+          :disabled="isEditMode || loading"
+        >
+          <option value="g">{{ es.units.g }}</option>
+          <option value="ml">{{ es.units.ml }}</option>
+          <option value="unit">{{ es.units.unidad }}</option>
+        </select>
+        <p v-if="isEditMode" class="form-hint">{{ es.product.unitLocked }}</p>
+      </div>
     </div>
 
     <!-- Description -->
@@ -219,6 +221,15 @@ function handleCancel() {
     <!-- Footer actions -->
     <div class="form-actions">
       <button
+        v-if="isEditMode"
+        type="button"
+        class="btn btn-secondary form-actions__delete"
+        :disabled="loading"
+        @click="emit('delete')"
+      >
+        {{ es.actions.delete }}
+      </button>
+      <button
         type="button"
         class="btn btn-secondary"
         :disabled="loading"
@@ -241,7 +252,19 @@ function handleCancel() {
 .product-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 480px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .form-field {
@@ -283,9 +306,9 @@ function handleCancel() {
 
 .form-validation-summary {
   padding: 0.75rem 1rem;
-  background: #fef2f2;
-  border: 1px solid #fca5a5;
-  border-radius: 0.375rem;
+  background: var(--color-error-soft);
+  border: 1px solid color-mix(in srgb, var(--color-error) 28%, var(--color-border));
+  border-radius: var(--radius-md);
 }
 
 .form-validation-summary__message {
@@ -300,5 +323,10 @@ function handleCancel() {
   justify-content: flex-end;
   gap: 0.75rem;
   padding-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.form-actions__delete {
+  margin-right: auto;
 }
 </style>

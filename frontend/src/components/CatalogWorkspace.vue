@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useProducts } from '../composables/useProducts';
-import { createProduct, updateProduct } from '../lib/api/resources/products';
+import { createProduct, deleteProduct, updateProduct } from '../lib/api/resources/products';
+import { toDisplayError } from '../lib/api/errors';
 import type { Product, CreateProductRequest, UpdateProductRequest, ApiError } from '../types/api';
-import { isApiError } from '../types/api';
 import ProductCard from './ProductCard.vue';
 import ProductTable from './ProductTable.vue';
 import ProductForm from './ProductForm.vue';
 import Sheet from './Sheet.vue';
 import ErrorBanner from './ErrorBanner.vue';
+import ConfirmDialog from './ConfirmDialog.vue';
+import { humanizeError } from '../lib/api/errors';
+import { showToast } from '../composables/useToast';
 import { es } from '../lib/i18n/es';
 
 type ViewMode = 'grid' | 'table';
@@ -30,6 +33,12 @@ const sheetMode = ref<'create' | 'edit'>('create');
 const editingProduct = ref<Product | undefined>(undefined);
 const formLoading = ref(false);
 const formError = ref<ApiError | Error | null>(null);
+const deleteTarget = ref<Product | null>(null);
+const deleteDescription = computed(() => {
+  const product = deleteTarget.value;
+  if (!product) return '';
+  return `${product.product_id} — ${product.name}. ${es.product.deleteConfirm}`;
+});
 
 onMounted(() => {
   fetch();
@@ -63,6 +72,47 @@ function closeSheet() {
   formError.value = null;
 }
 
+function requestDelete(product: Product) {
+  // Close the sheet first: Reka's modal DialogContent disables pointer events
+  // outside itself, so a native <dialog> opened on top swallows the first click.
+  sheetOpen.value = false;
+  deleteTarget.value = product;
+}
+
+function cancelDelete() {
+  if (!formLoading.value) {
+    deleteTarget.value = null;
+  }
+}
+
+async function confirmDelete() {
+  const product = deleteTarget.value;
+  if (!product) return;
+
+  formLoading.value = true;
+  formError.value = null;
+  try {
+    await deleteProduct(product.product_id);
+    deleteTarget.value = null;
+    await fetch();
+    editingProduct.value = undefined;
+    showToast({ title: es.toast.successTitle, description: es.product.deleteSuccess });
+  } catch (err) {
+    formError.value = toDisplayError(err);
+    showToast({
+      title: es.toast.errorTitle,
+      description: humanizeError(formError.value),
+      variant: 'error',
+    });
+    deleteTarget.value = null;
+    sheetMode.value = 'edit';
+    editingProduct.value = product;
+    sheetOpen.value = true;
+  } finally {
+    formLoading.value = false;
+  }
+}
+
 async function handleFormSubmit(data: CreateProductRequest | UpdateProductRequest) {
   formLoading.value = true;
   formError.value = null;
@@ -70,17 +120,21 @@ async function handleFormSubmit(data: CreateProductRequest | UpdateProductReques
   try {
     if (sheetMode.value === 'create') {
       await createProduct(data as CreateProductRequest);
+      showToast({ title: es.toast.successTitle, description: es.product.createSuccess });
     } else if (editingProduct.value) {
       await updateProduct(editingProduct.value.product_id, data as UpdateProductRequest);
+      showToast({ title: es.toast.successTitle, description: es.product.updateSuccess });
     }
 
-    // Refresh products list
     await fetch();
-    
-    // Close sheet
     closeSheet();
   } catch (err) {
-    formError.value = isApiError(err) ? err : (err as Error);
+    formError.value = toDisplayError(err);
+    showToast({
+      title: es.toast.errorTitle,
+      description: humanizeError(formError.value),
+      variant: 'error',
+    });
   } finally {
     formLoading.value = false;
   }
@@ -90,7 +144,7 @@ async function handleFormSubmit(data: CreateProductRequest | UpdateProductReques
 <template>
   <div class="catalog-workspace">
     <!-- Filters and view controls -->
-    <div class="catalog-controls">
+    <div class="toolbar catalog-controls">
       <div class="catalog-filters">
         <input
           v-model="searchQuery"
@@ -213,6 +267,8 @@ async function handleFormSubmit(data: CreateProductRequest | UpdateProductReques
           v-for="product in filteredProducts"
           :key="product.product_id"
           :product="product"
+          @edit="openEditSheet"
+          @delete="requestDelete"
         />
       </div>
       
@@ -220,6 +276,8 @@ async function handleFormSubmit(data: CreateProductRequest | UpdateProductReques
       <ProductTable
         v-else
         :products="filteredProducts"
+        @edit="openEditSheet"
+        @delete="requestDelete"
       />
     </div>
 
@@ -239,8 +297,19 @@ async function handleFormSubmit(data: CreateProductRequest | UpdateProductReques
         :loading="formLoading"
         @submit="handleFormSubmit"
         @cancel="closeSheet"
+        @delete="editingProduct && requestDelete(editingProduct)"
       />
     </Sheet>
+
+    <ConfirmDialog
+      :open="deleteTarget !== null"
+      :pending="formLoading"
+      :title="es.product.deleteTitle"
+      :description="deleteDescription"
+      :confirm-label="es.actions.delete"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
   </div>
 </template>
 
@@ -248,7 +317,7 @@ async function handleFormSubmit(data: CreateProductRequest | UpdateProductReques
 .catalog-workspace {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .catalog-controls {
@@ -277,19 +346,19 @@ async function handleFormSubmit(data: CreateProductRequest | UpdateProductReques
 
 .catalog-search {
   flex: 1;
-  min-width: 200px;
+  min-width: min(100%, 12rem);
   max-width: 400px;
 }
 
 .catalog-type-filter {
-  min-width: 180px;
+  min-width: min(100%, 10rem);
 }
 
 .catalog-view-toggle {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.25rem;
   border: 1px solid var(--color-border);
-  border-radius: 0.375rem;
+  border-radius: var(--radius-sm);
   padding: 0.25rem;
   background: var(--color-bg-surface);
 }
@@ -298,15 +367,17 @@ async function handleFormSubmit(data: CreateProductRequest | UpdateProductReques
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2rem;
+  height: 2rem;
   padding: 0;
   background: transparent;
   border: none;
-  border-radius: 0.25rem;
+  border-radius: var(--radius-sm);
   color: var(--color-text-muted);
   cursor: pointer;
-  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
 }
 
 .view-toggle-btn:hover {
@@ -331,7 +402,7 @@ async function handleFormSubmit(data: CreateProductRequest | UpdateProductReques
 
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
   gap: 1.5rem;
 }
 
@@ -358,7 +429,6 @@ async function handleFormSubmit(data: CreateProductRequest | UpdateProductReques
 .skeleton-card {
   aspect-ratio: 3 / 4;
   background: var(--color-bg-warm);
-  border-radius: 0.5rem;
   position: relative;
   overflow: hidden;
 }
@@ -388,7 +458,6 @@ async function handleFormSubmit(data: CreateProductRequest | UpdateProductReques
 .skeleton-row {
   height: 60px;
   background: var(--color-bg-warm);
-  border-radius: 0.375rem;
   position: relative;
   overflow: hidden;
 }
