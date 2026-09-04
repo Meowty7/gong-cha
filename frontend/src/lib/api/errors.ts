@@ -92,6 +92,16 @@ export function humanizeError(error: unknown, fallback = es.errors.generic): str
   ) {
     return es.errors.missingComponent;
   }
+  if (
+    lower.includes('failed to fetch') ||
+    lower.includes('network error') ||
+    lower.includes('networkerror') ||
+    lower.includes('load failed') ||
+    lower.includes('err_connection') ||
+    lower.includes('err_internet')
+  ) {
+    return es.errors.network;
+  }
   if (code === 'validation_error' && raw) return mapValidationMessage(raw);
   if (code === 'conflict') return es.errors.conflict;
   if (code === 'not_found') return es.errors.notFound;

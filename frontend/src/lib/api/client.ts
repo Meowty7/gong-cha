@@ -3,22 +3,17 @@
  */
 
 import type { ApiError } from '../../types/api';
+import { resolvePublicApiUrl } from '../localEnv';
 
 // ============================================================================
 // Configuration
 // ============================================================================
 
-/** Validate and retrieve API base URL from environment */
+/** API origin. Empty PUBLIC_API_URL means same-origin (`/api` via proxy). */
 function getApiBaseUrl(): string {
-  const url = import.meta.env.PUBLIC_API_URL;
-  
-  if (!url) {
-    throw new Error(
-      'PUBLIC_API_URL is not defined. Check .env or environment variables.'
-    );
-  }
+  const url = (import.meta.env.PUBLIC_API_URL ?? '').trim();
+  if (!url) return '';
 
-  // Basic URL validation
   try {
     new URL(url);
   } catch {
@@ -27,10 +22,11 @@ function getApiBaseUrl(): string {
     );
   }
 
-  return url;
+  return resolvePublicApiUrl(
+    url,
+    typeof window === 'undefined' ? '' : window.location.origin,
+  );
 }
-
-const API_BASE_URL = getApiBaseUrl();
 
 /** Default request timeout in milliseconds */
 const DEFAULT_TIMEOUT_MS = 15_000;
@@ -83,7 +79,7 @@ export async function apiRequest<T>(
     : timeoutController.signal;
 
   try {
-    const url = `${API_BASE_URL}${endpoint}`;
+    const url = `${getApiBaseUrl()}${endpoint}`;
     
     const response = await fetch(url, {
       method,

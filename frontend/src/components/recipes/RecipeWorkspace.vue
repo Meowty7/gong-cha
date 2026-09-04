@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRecipeEditor } from '../../composables/useRecipeEditor';
 import { useRecipes } from '../../composables/useRecipes';
 import { humanizeError } from '../../lib/api/errors';
 import { showToast } from '../../composables/useToast';
 import { es } from '../../lib/i18n/es';
-import type { ProductType } from '../../types/api';
+import type { ProductType, Recipe } from '../../types/api';
+import ConfirmDialog from '../ConfirmDialog.vue';
 import ErrorBanner from '../ErrorBanner.vue';
 import RecipeDetail from './RecipeDetail.vue';
 import RecipeEditSheet from './RecipeEditSheet.vue';
@@ -23,6 +24,7 @@ const {
   select,
   create,
   update,
+  remove,
 } = useRecipes();
 
 const {
@@ -48,6 +50,23 @@ const {
 
 const searchQuery = ref('');
 const typeFilter = ref<ProductType | ''>('');
+const showDetail = ref(false);
+const deleteTarget = ref<Recipe | null>(null);
+const deletePending = ref(false);
+const deleteDescription = computed(() => {
+  const recipe = deleteTarget.value;
+  if (!recipe) return '';
+  return `${recipe.recipe_id}. ${es.recipes.deleteConfirm}`;
+});
+
+function handleSelect(id: string) {
+  select(id);
+  showDetail.value = true;
+}
+
+function handleBack() {
+  showDetail.value = false;
+}
 
 onMounted(() => {
   fetchAll();
@@ -58,10 +77,41 @@ function handleEdit(id: string) {
   if (recipe) openEdit(recipe);
 }
 
+function requestDelete(id: string) {
+  closeEditor();
+  deleteTarget.value = recipes.value.find((item) => item.recipe_id === id) ?? null;
+}
+
+function cancelDelete() {
+  if (!deletePending.value) deleteTarget.value = null;
+}
+
+async function confirmDelete() {
+  const recipe = deleteTarget.value;
+  if (!recipe) return;
+  deletePending.value = true;
+  try {
+    await remove(recipe.recipe_id);
+    deleteTarget.value = null;
+    showDetail.value = false;
+    showToast({ title: es.toast.successTitle, description: es.recipes.deleteSuccess });
+  } catch (err) {
+    showToast({
+      title: es.toast.errorTitle,
+      description: humanizeError(err),
+      variant: 'error',
+    });
+    deleteTarget.value = null;
+  } finally {
+    deletePending.value = false;
+  }
+}
+
 async function handleSave() {
   const creating = editorMode.value === 'create';
   const ok = await submit((body) => (creating ? create(body) : update(body.recipe_id, body)));
   if (ok) {
+    showDetail.value = true;
     showToast({
       title: es.toast.successTitle,
       description: creating ? es.recipes.createSuccess : es.recipes.updateSuccess,
@@ -107,7 +157,7 @@ async function handleSave() {
       <span class="sr-only">{{ es.recipes.loadingList }}</span>
     </div>
 
-    <div v-else class="recipe-workspace__grid">
+    <div v-else class="recipe-workspace__grid" :class="{ 'is-showing-detail': showDetail }">
       <RecipeList
         class="recipe-workspace__list"
         :recipes="recipes"
@@ -115,8 +165,9 @@ async function handleSave() {
         :selected-id="selectedId"
         :search-query="searchQuery"
         :type-filter="typeFilter"
-        @select="select"
+        @select="handleSelect"
         @edit="handleEdit"
+        @delete="requestDelete"
         @update:search-query="searchQuery = $event"
         @update:type-filter="typeFilter = $event"
       />
@@ -126,7 +177,10 @@ async function handleSave() {
         :nodes="selectedTree"
         :products="products"
         :loading="false"
+        :show-back="showDetail"
         @edit="handleEdit"
+        @delete="requestDelete"
+        @back="handleBack"
       />
     </div>
 
@@ -147,6 +201,16 @@ async function handleSave() {
       @remove-component="removeComponent"
       @update-field="updateField"
       @update-component="updateComponent"
+    />
+
+    <ConfirmDialog
+      :open="deleteTarget !== null"
+      :pending="deletePending"
+      :title="es.recipes.deleteTitle"
+      :description="deleteDescription"
+      :confirm-label="es.actions.delete"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
     />
   </div>
 </template>
@@ -205,11 +269,9 @@ async function handleSave() {
 }
 
 @media (max-width: 1023px) {
-  .recipe-workspace__list {
-    order: 1;
-  }
-  .recipe-workspace__detail {
-    order: 2;
+  .recipe-workspace__grid.is-showing-detail .recipe-workspace__list,
+  .recipe-workspace__grid:not(.is-showing-detail) .recipe-workspace__detail {
+    display: none;
   }
 }
 </style>

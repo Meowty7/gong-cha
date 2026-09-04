@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { useDirectCalculation } from '../../composables/useDirectCalculation';
 import type { InventoryBalance, Product } from '../../types/api';
+import { formatWhen } from '../../lib/datetime';
 import { isNonNegativeQuantity, isPositiveQuantity } from '../../lib/quantity';
 import { es } from '../../lib/i18n/es';
 import ErrorBanner from '../ErrorBanner.vue';
@@ -225,7 +226,17 @@ function onSubmit() {
           <p v-if="result.limiting_component" class="answer__hint">
             {{ es.calculations.limitedBy }}: {{ limitingHint() }}.
           </p>
+          <p v-if="result.calculated_at" class="answer__hint">
+            {{ es.calculations.calculatedAt.replace('{when}', formatWhen(result.calculated_at)) }}
+          </p>
         </div>
+
+        <RequirementTable
+          v-if="result.consumed?.length"
+          :rows="result.consumed"
+          :caption="es.calculations.consumedCaption"
+          :product-names="productNames"
+        />
 
         <div class="leftovers">
           <RequirementTable

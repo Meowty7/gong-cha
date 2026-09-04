@@ -47,8 +47,16 @@ export function useRecipes() {
     () => recipes.value.find((recipe) => recipe.recipe_id === selectedId.value) ?? null
   );
 
+  const productsById = computed(() => {
+    const map = new Map<string, Product>();
+    for (const product of products.value) map.set(product.product_id, product);
+    return map;
+  });
+
   const selectedTree = computed(() =>
-    selected.value ? buildRecipeTree(selected.value, recipesByResultId.value) : []
+    selected.value
+      ? buildRecipeTree(selected.value, recipesByResultId.value, productsById.value)
+      : []
   );
 
   async function hydrate(list: Recipe[], signal: AbortSignal): Promise<Recipe[]> {

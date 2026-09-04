@@ -73,6 +73,7 @@ export function useEventPlanning() {
       pending.value = true;
       try {
         result.value = await planEvent({ event_id: eventId.value.trim() });
+        window.dispatchEvent(new Event('gongcha:calculation'));
       } catch (err) {
         error.value = toDisplayError(err);
       } finally {
@@ -91,6 +92,7 @@ export function useEventPlanning() {
     pending.value = true;
     try {
       result.value = await planEvent({ demands });
+      window.dispatchEvent(new Event('gongcha:calculation'));
     } catch (err) {
       error.value = toDisplayError(err);
     } finally {

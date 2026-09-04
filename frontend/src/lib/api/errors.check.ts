@@ -43,4 +43,9 @@ assert(
   'missing component FK stays mapped'
 );
 
+assert(
+  humanizeError(new Error('Network error: Failed to fetch')) === es.errors.network,
+  'offline fetch is Spanish, not Failed to fetch'
+);
+
 console.log('error humanize checks passed');

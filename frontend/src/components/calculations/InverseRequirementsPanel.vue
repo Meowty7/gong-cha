@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { useInverseCalculation } from '../../composables/useInverseCalculation';
 import type { Product } from '../../types/api';
+import { formatWhen } from '../../lib/datetime';
 import { es } from '../../lib/i18n/es';
 import ErrorBanner from '../ErrorBanner.vue';
 import ProductSelect from '../ui/ProductSelect.vue';
@@ -97,6 +98,9 @@ const quantityError = computed(() =>
             <strong class="tabular-nums">{{ quantity }} {{ selectedUnit }}</strong>
             <template v-if="selectedProduct"> de {{ selectedProduct.name }}</template>.
           </h3>
+          <p v-if="result.calculated_at" class="answer__hint">
+            {{ es.calculations.calculatedAt.replace('{when}', formatWhen(result.calculated_at)) }}
+          </p>
         </div>
         <RequirementTable
           :rows="result.raw_materials"
@@ -175,6 +179,12 @@ const quantityError = computed(() =>
 
 .answer__value strong {
   font-size: 1.375rem;
+}
+
+.answer__hint {
+  margin: 0.375rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
 }
 
 .result-detail {

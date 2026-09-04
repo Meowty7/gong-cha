@@ -22,7 +22,7 @@ const emit = defineEmits<Emits>();
 
 <template>
   <div class="component-row">
-    <div class="field">
+    <div class="field field--product">
       <label class="field__label" :for="`component-${row.key}-product`">
         {{ es.recipes.component }}
       </label>
@@ -53,7 +53,7 @@ const emit = defineEmits<Emits>();
       </p>
     </div>
 
-    <div class="field">
+    <div class="field field--qty">
       <label class="field__label" :for="`component-${row.key}-qty`">
         {{ es.recipes.quantity }}
       </label>
@@ -130,6 +130,34 @@ const emit = defineEmits<Emits>();
 
 .component-row__remove {
   min-height: 2.75rem;
+}
+
+@media (max-width: 767px) {
+  .component-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      'product product'
+      'qty unit'
+      'remove remove';
+    padding: 0.75rem;
+  }
+
+  .field--product {
+    grid-area: product;
+  }
+
+  .field--qty {
+    grid-area: qty;
+  }
+
+  .field--unit {
+    grid-area: unit;
+  }
+
+  .component-row__remove {
+    grid-area: remove;
+    width: 100%;
+  }
 }
 
 @media (min-width: 768px) {

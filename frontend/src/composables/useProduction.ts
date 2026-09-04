@@ -176,6 +176,7 @@ export function useProduction() {
         product_id: productId.value,
         quantity: quantity.value.trim(),
       });
+      window.dispatchEvent(new Event('gongcha:calculation'));
       await refetchInventory();
     } catch (err) {
       simulation.value = null;
@@ -215,6 +216,7 @@ export function useProduction() {
         quantity: current.quantity,
         idempotency_key: current.key,
       });
+      window.dispatchEvent(new Event('gongcha:calculation'));
       dialogOpen.value = false;
       intent.value = null;
       try {

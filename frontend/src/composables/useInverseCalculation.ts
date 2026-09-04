@@ -35,6 +35,7 @@ export function useInverseCalculation() {
         product_id: productId.value.trim(),
         quantity: quantity.value.trim(),
       });
+      window.dispatchEvent(new Event('gongcha:calculation'));
     } catch (err) {
       error.value = toDisplayError(err);
     } finally {

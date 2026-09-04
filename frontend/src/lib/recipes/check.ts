@@ -71,6 +71,18 @@ assert(
   'ST001 under ST002 should expand to MP001'
 );
 assert(tree.every((n) => !n.cyclic), 'valid chain has no cycle flags');
+assert(tree.every((n) => !n.incomplete), 'valid chain has no incomplete flags');
+
+const productsById = new Map(products.map((p) => [p.product_id, p]));
+const orphan: Recipe = {
+  recipe_id: 'R-ORPHAN',
+  product_result_id: 'PT001',
+  batch_yield: '1',
+  yield_unit: 'unit',
+  components: [{ component_product_id: 'ST001', quantity: '1', unit: 'ml' }],
+};
+const incompleteTree = buildRecipeTree(orphan, new Map(), productsById);
+assert(incompleteTree[0]?.incomplete === true, 'semi-finished without recipe is incomplete');
 
 const selfCycle: Recipe = {
   recipe_id: 'R-SELF',

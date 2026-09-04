@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onUnmounted, ref, watch } from 'vue';
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { es } from '../../lib/i18n/es';
 import { recipeErrorMessage, type FieldErrors, type RecipeDraft } from '../../lib/recipes/logic';
 import type { ApiError, Product } from '../../types/api';
@@ -31,9 +31,46 @@ interface Emits {
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
+const mounted = ref(false);
 const panelRef = ref<HTMLElement | null>(null);
 const titleRef = ref<HTMLElement | null>(null);
 let previousFocus: HTMLElement | null = null;
+let lockedScrollY = 0;
+let bodyLocked = false;
+
+function lockBody() {
+  if (bodyLocked) return;
+  lockedScrollY = window.scrollY;
+  bodyLocked = true;
+  const { body, documentElement } = document;
+  documentElement.style.overflow = 'hidden';
+  documentElement.style.overscrollBehavior = 'none';
+  documentElement.style.scrollbarGutter = 'auto';
+  body.style.overflow = 'hidden';
+  body.style.overscrollBehavior = 'none';
+  body.style.position = 'fixed';
+  body.style.top = `-${lockedScrollY}px`;
+  body.style.left = '0';
+  body.style.right = '0';
+  body.style.width = '100%';
+}
+
+function unlockBody() {
+  if (!bodyLocked) return;
+  bodyLocked = false;
+  const { body, documentElement } = document;
+  documentElement.style.overflow = '';
+  documentElement.style.overscrollBehavior = '';
+  documentElement.style.scrollbarGutter = '';
+  body.style.overflow = '';
+  body.style.overscrollBehavior = '';
+  body.style.position = '';
+  body.style.top = '';
+  body.style.left = '';
+  body.style.right = '';
+  body.style.width = '';
+  window.scrollTo(0, lockedScrollY);
+}
 
 function focusable(): HTMLElement[] {
   if (!panelRef.value) return [];
@@ -71,22 +108,30 @@ watch(
     if (isOpen) {
       previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       document.addEventListener('keydown', onKeydown);
+      lockBody();
       await nextTick();
       titleRef.value?.focus();
     } else {
       document.removeEventListener('keydown', onKeydown);
+      unlockBody();
       previousFocus?.focus();
       previousFocus = null;
     }
   }
 );
 
+onMounted(() => {
+  mounted.value = true;
+});
+
 onUnmounted(() => {
   document.removeEventListener('keydown', onKeydown);
+  unlockBody();
 });
 </script>
 
 <template>
+  <Teleport v-if="mounted" to="body">
     <div v-if="open" class="sheet-root">
       <div
         class="sheet-backdrop"
@@ -110,32 +155,36 @@ onUnmounted(() => {
           </h2>
           <button
             type="button"
-            class="btn btn-secondary sheet-close"
+            class="sheet-close"
             :disabled="pending"
             :aria-label="es.recipes.closeEditor"
             @click="emit('close')"
           >
-            {{ es.actions.close }}
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <line x1="5" y1="5" x2="15" y2="15" />
+              <line x1="15" y1="5" x2="5" y2="15" />
+            </svg>
           </button>
         </header>
 
-        <ErrorBanner
-          v-if="error"
-          class="sheet-error"
-          :error="error"
-          :text="recipeErrorMessage(error)"
-          :dismissible="false"
-        />
-
-        <div
-          v-if="showErrors && (fieldErrors.recipe_id || fieldErrors.product_result_id || fieldErrors.batch_yield || fieldErrors.yield_unit || fieldErrors.components)"
-          class="sheet-alert"
-          role="alert"
-        >
-          {{ es.recipes.validationSummary }}
-        </div>
-
         <form class="sheet-form" @submit.prevent="emit('save')">
+          <div class="sheet-form__scroll">
+          <ErrorBanner
+            v-if="error"
+            class="sheet-error"
+            :error="error"
+            :text="recipeErrorMessage(error)"
+            :dismissible="false"
+          />
+
+          <div
+            v-if="showErrors && (fieldErrors.recipe_id || fieldErrors.product_result_id || fieldErrors.batch_yield || fieldErrors.yield_unit || fieldErrors.components)"
+            class="sheet-alert"
+            role="alert"
+          >
+            {{ es.recipes.validationSummary }}
+          </div>
+
           <div class="field">
             <label class="field__label" for="recipe-id">{{ es.recipes.recipeId }}</label>
             <input
@@ -240,6 +289,7 @@ onUnmounted(() => {
               {{ canAddComponent ? es.recipes.selfComponentHint : es.recipes.noMoreComponents }}
             </p>
           </fieldset>
+          </div>
 
           <footer class="sheet-footer">
             <button
@@ -261,13 +311,18 @@ onUnmounted(() => {
         </form>
       </aside>
     </div>
+  </Teleport>
 </template>
 
 <style scoped>
 .sheet-root {
   position: fixed;
   inset: 0;
+  width: 100vw;
+  height: 100%;
   z-index: 400;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 .sheet-backdrop {
@@ -280,27 +335,27 @@ onUnmounted(() => {
   position: absolute;
   top: 0;
   right: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
   width: min(36rem, 100%);
-  height: 100%;
-  overflow: auto;
+  max-height: 100%;
+  overflow: hidden;
   background: var(--color-bg-surface);
   border-left: 1px solid var(--color-border);
   box-shadow: 0 10px 15px -1px rgb(0 0 0 / 0.1);
   animation: sheet-in 300ms cubic-bezier(0.4, 0, 0.2, 1) ease;
 }
 
-.sheet-header,
-.sheet-form {
-  padding: 1.5rem;
-}
-
 .sheet-header {
+  flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 1rem;
+  padding: 1.5rem;
+  padding-top: max(1.5rem, env(safe-area-inset-top, 0px));
+  background: var(--color-bg-surface);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -315,12 +370,33 @@ onUnmounted(() => {
 }
 
 .sheet-close {
-  min-height: 2.75rem;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.sheet-close:hover:not(:disabled) {
+  background: var(--color-bg-hover);
+  border-color: var(--color-text-muted);
+  color: var(--color-text);
+}
+
+.sheet-close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .sheet-error,
 .sheet-alert {
-  margin: 0 1.5rem 0;
+  margin: 0;
 }
 
 .sheet-alert {
@@ -335,8 +411,20 @@ onUnmounted(() => {
 .sheet-form {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.sheet-form__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
   gap: 1.25rem;
-  padding-bottom: 2.5rem;
+  padding: 1.5rem;
 }
 
 .field__label {
@@ -372,9 +460,14 @@ onUnmounted(() => {
 }
 
 .sheet-footer {
+  flex-shrink: 0;
   display: flex;
   justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 0.75rem;
+  padding: 1rem 1.5rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  background: var(--color-bg-warm);
+  border-top: 1px solid var(--color-border);
 }
 
 @keyframes sheet-in {
@@ -385,6 +478,48 @@ onUnmounted(() => {
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+@media (max-width: 767px) {
+  .sheet-panel {
+    inset: 0;
+    width: 100vw;
+    border-left: 0;
+    animation-name: sheet-up;
+  }
+
+  .sheet-header {
+    padding: 1rem;
+    padding-top: max(1rem, env(safe-area-inset-top, 0px));
+  }
+
+  .sheet-form__scroll {
+    padding: 1rem;
+  }
+
+  .sheet-title {
+    font-size: 1.25rem;
+  }
+
+  .sheet-footer {
+    padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .sheet-footer .btn {
+    flex: 1 1 0;
+    min-height: 2.75rem;
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

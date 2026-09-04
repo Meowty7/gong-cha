@@ -5,7 +5,8 @@
 import { ref, computed } from 'vue';
 import type { Ref } from 'vue';
 import { listInventory } from '../lib/api/resources/inventory';
-import type { InventoryBalance, ApiError } from '../types/api';
+import { withMissingBalances } from '../lib/inventory/rows';
+import type { InventoryBalance, ApiError, Product } from '../types/api';
 import { isApiError } from '../types/api';
 
 export interface UseInventoryOptions {
@@ -13,6 +14,8 @@ export interface UseInventoryOptions {
   immediate?: boolean;
   /** Optional names so search matches "taro" as well as MP010 */
   productNames?: Ref<Record<string, string>>;
+  /** Catalog so products without a balance still appear as 0 */
+  products?: Ref<Product[]>;
 }
 
 export function useInventory(options: UseInventoryOptions = {}) {
@@ -56,7 +59,7 @@ export function useInventory(options: UseInventoryOptions = {}) {
    * Filtered inventory based on search and location
    */
   const filteredInventory = computed(() => {
-    let result = inventory.value;
+    let result = withMissingBalances(inventory.value, options.products?.value ?? []);
 
     // Filter by location
     if (locationFilter.value) {
@@ -107,7 +110,9 @@ export function useInventory(options: UseInventoryOptions = {}) {
    * Find inventory balance for a product
    */
   function findByProductId(productId: string): InventoryBalance | undefined {
-    return inventory.value.find((i) => i.product_id === productId);
+    return withMissingBalances(inventory.value, options.products?.value ?? []).find(
+      (i) => i.product_id === productId,
+    );
   }
 
   // Auto-fetch if immediate option is set

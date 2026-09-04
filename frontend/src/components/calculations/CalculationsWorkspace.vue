@@ -6,6 +6,7 @@ import { es } from '../../lib/i18n/es';
 import ErrorBanner from '../ErrorBanner.vue';
 import DirectCapacityPanel from './DirectCapacityPanel.vue';
 import InverseRequirementsPanel from './InverseRequirementsPanel.vue';
+import CalculationHistory from './CalculationHistory.vue';
 
 const {
   products,
@@ -90,6 +91,8 @@ onMounted(() => {
         :product-names="names"
       />
     </div>
+
+    <CalculationHistory />
   </div>
 </template>
 

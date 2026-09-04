@@ -100,6 +100,7 @@ export function useDirectCalculation() {
         ...(useDirect.value.length ? { use_direct: [...useDirect.value] } : {}),
         ...(inventory ? { inventory } : {}),
       });
+      window.dispatchEvent(new Event('gongcha:calculation'));
     } catch (err) {
       error.value = toDisplayError(err);
     } finally {

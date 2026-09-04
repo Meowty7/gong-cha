@@ -15,6 +15,7 @@ interface Props {
 interface Emits {
   (e: 'select', id: string): void;
   (e: 'edit', id: string): void;
+  (e: 'delete', id: string): void;
   (e: 'update:searchQuery', value: string): void;
   (e: 'update:typeFilter', value: ProductType | ''): void;
 }
@@ -79,7 +80,7 @@ const filtered = computed(() => {
     </div>
 
     <div v-else class="recipe-list__table-wrap">
-      <table class="data-table">
+      <table class="data-table recipe-table">
         <caption class="sr-only">{{ es.recipes.listLabel }}</caption>
         <thead>
           <tr>
@@ -108,11 +109,11 @@ const filtered = computed(() => {
                 {{ recipe.components.length }} {{ es.recipes.componentCount }}<template v-if="productTypeOf(products, recipe.product_result_id)"> · {{ productTypeLabel(productTypeOf(products, recipe.product_result_id)!) }}</template>
               </span>
             </td>
-            <td :data-label="es.recipes.recipeId"><code>{{ recipe.recipe_id }}</code></td>
-            <td class="recipe-table__num tabular-nums" :data-label="es.recipes.batchYield">
+            <td class="recipe-table__id" :data-label="es.recipes.recipeId"><code>{{ recipe.recipe_id }}</code></td>
+            <td class="recipe-table__yield recipe-table__num tabular-nums" :data-label="es.recipes.batchYield">
               {{ recipe.batch_yield }} {{ formatUnit(recipe.yield_unit) }}
             </td>
-            <td class="recipe-table__num">
+            <td class="recipe-table__action recipe-table__num">
               <button
                 type="button"
                 class="recipe-table__edit"
@@ -120,6 +121,14 @@ const filtered = computed(() => {
                 @click="emit('edit', recipe.recipe_id)"
               >
                 {{ es.actions.edit }}
+              </button>
+              <button
+                type="button"
+                class="recipe-table__edit"
+                :aria-label="`${es.actions.delete} ${recipe.recipe_id}`"
+                @click="emit('delete', recipe.recipe_id)"
+              >
+                {{ es.actions.delete }}
               </button>
             </td>
           </tr>
@@ -145,6 +154,47 @@ const filtered = computed(() => {
 
 .recipe-list__type-filter {
   min-width: 140px;
+}
+
+@media (max-width: 767px) {
+  .recipe-list__search,
+  .recipe-list__type-filter {
+    flex: 1 1 100%;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .recipe-table tbody tr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .recipe-table td {
+    display: block;
+    padding: 0;
+  }
+
+  .recipe-table td::before {
+    display: none;
+  }
+
+  .recipe-table td.recipe-table__id,
+  .recipe-table td.recipe-table__yield {
+    display: none;
+  }
+
+  .recipe-table__action {
+    flex-shrink: 0;
+  }
+
+  .recipe-table__edit {
+    min-height: 2.75rem;
+    padding: 0 0.25rem;
+  }
 }
 
 .recipe-list__empty {
@@ -187,6 +237,12 @@ const filtered = computed(() => {
   margin-top: 0.125rem;
   font-size: 0.75rem;
   color: var(--color-text-subtle);
+}
+
+.recipe-table__action {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
 }
 
 .recipe-table__edit {

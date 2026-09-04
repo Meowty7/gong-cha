@@ -2,12 +2,12 @@
 import { onMounted } from 'vue';
 import { TabsContent, TabsIndicator, TabsList, TabsRoot, TabsTrigger } from 'reka-ui';
 import { useProductIndex } from '../../composables/useProductIndex';
-import { useInventorySnapshot } from '../../composables/useInventorySnapshot';
 import { useEventPlanning } from '../../composables/useEventPlanning';
 import { es } from '../../lib/i18n/es';
 import ErrorBanner from '../ErrorBanner.vue';
 import DemandRowList from './DemandRowList.vue';
 import EventResults from './EventResults.vue';
+import CalculationHistory from '../calculations/CalculationHistory.vue';
 
 const {
   products,
@@ -16,13 +16,6 @@ const {
   error: catalogError,
   load: loadCatalog,
 } = useProductIndex();
-
-const {
-  byId,
-  loading: stockLoading,
-  error: stockError,
-  load: loadStock,
-} = useInventorySnapshot();
 
 const {
   mode,
@@ -42,14 +35,13 @@ const {
 
 onMounted(() => {
   void loadCatalog();
-  void loadStock();
 });
 </script>
 
 <template>
   <div class="workspace">
-    <p v-if="catalogLoading || stockLoading" class="muted">{{ es.states.loading }}</p>
-    <ErrorBanner :error="catalogError ?? stockError ?? error" :dismissible="!!error" @dismiss="dismissError" />
+    <p v-if="catalogLoading" class="muted">{{ es.states.loading }}</p>
+    <ErrorBanner :error="catalogError ?? error" :dismissible="!!error" @dismiss="dismissError" />
 
     <form class="card form" @submit.prevent="submit">
       <TabsRoot v-model="mode" class="tabs">
@@ -95,11 +87,14 @@ onMounted(() => {
       <EventResults
         v-if="result"
         :raw-materials="result.raw_materials"
+        :shortages="result.shortages ?? []"
         :per-line="result.per_line"
-        :live-stock="byId"
         :product-names="names"
+        :calculated-at="result.calculated_at"
       />
     </Transition>
+
+    <CalculationHistory />
   </div>
 </template>
 

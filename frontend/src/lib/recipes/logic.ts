@@ -24,6 +24,7 @@ export interface RecipeTreeNode {
   recipeId?: string;
   children: RecipeTreeNode[];
   cyclic: boolean;
+  incomplete: boolean;
 }
 
 export interface RowErrors {
@@ -242,6 +243,7 @@ export function hasFieldErrors(errors: FieldErrors): boolean {
 export function buildRecipeTree(
   recipe: Recipe,
   recipesByResultId: Map<string, Recipe>,
+  productsById: Map<string, Product> = new Map(),
   seen: ReadonlySet<string> = new Set()
 ): RecipeTreeNode[] {
   const nextSeen = new Set(seen);
@@ -250,14 +252,20 @@ export function buildRecipeTree(
   return (recipe.components ?? []).map((component) => {
     const child = recipesByResultId.get(component.component_product_id);
     const cyclic = nextSeen.has(component.component_product_id);
+    const product = productsById.get(component.component_product_id);
+    const incomplete =
+      !child && !cyclic && !!product && isResultProduct(product);
     return {
       productId: component.component_product_id,
       quantity: component.quantity,
       unit: component.unit,
       recipeId: child?.recipe_id,
       cyclic,
+      incomplete,
       children:
-        child && !cyclic ? buildRecipeTree(child, recipesByResultId, nextSeen) : [],
+        child && !cyclic
+          ? buildRecipeTree(child, recipesByResultId, productsById, nextSeen)
+          : [],
     };
   });
 }

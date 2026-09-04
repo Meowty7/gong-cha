@@ -34,9 +34,10 @@ function nodeKey(node: RecipeTreeNode): string {
       <AccordionHeader as="div" class="accordion__header">
         <AccordionTrigger class="accordion__trigger">
           <span class="accordion__label">
-            {{ nameOf(node.productId) }}
+            <span class="accordion__name">{{ nameOf(node.productId) }}</span>
             <span v-if="node.children.length > 0" class="accordion__hint">{{ es.recipes.nestedBadge }}</span>
             <span v-if="node.cyclic" class="accordion__cycle">{{ es.recipes.cycleBadge }}</span>
+            <span v-if="node.incomplete" class="accordion__cycle">{{ es.recipes.incompleteBadge }}</span>
           </span>
           <span class="accordion__qty tabular-nums">{{ node.quantity }} {{ formatUnit(node.unit) }}</span>
           <svg
@@ -124,9 +125,14 @@ function nodeKey(node: RecipeTreeNode): string {
 .accordion__label {
   display: flex;
   align-items: baseline;
+  flex-wrap: wrap;
   gap: 0.5rem;
   flex: 1;
   min-width: 0;
+}
+
+.accordion__name {
+  overflow-wrap: anywhere;
 }
 
 .accordion__hint,
@@ -202,5 +208,26 @@ function nodeKey(node: RecipeTreeNode): string {
 .accordion--nested .accordion__trigger {
   font-size: 0.875rem;
   font-weight: 500;
+}
+
+@media (max-width: 767px) {
+  .accordion__trigger {
+    flex-wrap: wrap;
+    gap: 0.375rem 0.75rem;
+    min-height: 2.75rem;
+  }
+
+  .accordion__label {
+    flex: 1 1 calc(100% - 2rem);
+  }
+
+  .accordion__qty {
+    width: 100%;
+    padding-inline: 0.5rem;
+  }
+
+  .accordion__content {
+    padding-left: 0.75rem;
+  }
 }
 </style>

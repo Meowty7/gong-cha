@@ -1,5 +1,6 @@
-import { post } from '../client';
+import { get, post } from '../client';
 import type {
+  CalculationRun,
   DirectCalculationRequest,
   DirectCalculationResponse,
   InverseCalculationRequest,
@@ -26,4 +27,8 @@ export async function calculateInverse(
     throw new Error('Empty inverse calculation response');
   }
   return result;
+}
+
+export async function listCalculations(signal?: AbortSignal): Promise<CalculationRun[]> {
+  return (await get<CalculationRun[]>('/api/v1/calculations', { signal })) ?? [];
 }

@@ -9,10 +9,13 @@ interface Props {
   nodes: RecipeTreeNode[];
   products: Product[];
   loading: boolean;
+  showBack?: boolean;
 }
 
 interface Emits {
   (e: 'edit', id: string): void;
+  (e: 'delete', id: string): void;
+  (e: 'back'): void;
 }
 
 defineProps<Props>();
@@ -39,6 +42,14 @@ function productName(products: Product[], id: string): string {
     <template v-else>
       <header class="recipe-detail__header">
         <div>
+          <button
+            v-if="showBack"
+            type="button"
+            class="recipe-detail__back"
+            @click="emit('back')"
+          >
+            {{ es.actions.back }}
+          </button>
           <h2 class="recipe-detail__title">{{ productName(products, recipe.product_result_id) }}</h2>
           <p class="recipe-detail__meta">
             <code class="recipe-detail__id">{{ recipe.recipe_id }}</code>
@@ -47,9 +58,14 @@ function productName(products: Product[], id: string): string {
             </span>
           </p>
         </div>
-        <button type="button" class="btn btn-secondary" @click="emit('edit', recipe.recipe_id)">
-          {{ es.recipes.edit }}
-        </button>
+        <div class="recipe-detail__actions">
+          <button type="button" class="btn btn-secondary" @click="emit('edit', recipe.recipe_id)">
+            {{ es.recipes.edit }}
+          </button>
+          <button type="button" class="btn btn-secondary" @click="emit('delete', recipe.recipe_id)">
+            {{ es.actions.delete }}
+          </button>
+        </div>
       </header>
 
       <h3 class="recipe-detail__tree-title">{{ es.recipes.composition }}</h3>
@@ -78,11 +94,50 @@ function productName(products: Product[], id: string): string {
   margin-bottom: 1.5rem;
 }
 
+.recipe-detail__back {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0 0 0.5rem;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+@media (min-width: 1024px) {
+  .recipe-detail__back {
+    display: none;
+  }
+}
+
 .recipe-detail__title {
   font-family: var(--font-body);
   font-weight: 700;
   font-size: 2rem;
   margin-bottom: 0.5rem;
+}
+
+@media (max-width: 767px) {
+  .recipe-detail__title {
+    font-size: 1.375rem;
+  }
+
+  .recipe-detail__actions {
+    width: 100%;
+  }
+
+  .recipe-detail__actions .btn {
+    flex: 1;
+    min-height: 2.75rem;
+  }
+}
+
+.recipe-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 
 .recipe-detail__meta {

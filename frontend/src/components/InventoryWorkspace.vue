@@ -13,7 +13,7 @@ import { humanizeError } from '../lib/api/errors';
 import { showToast } from '../composables/useToast';
 import { es } from '../lib/i18n/es';
 
-const { names, units, load: loadNames } = useProductIndex();
+const { products, names, units, load: loadNames } = useProductIndex();
 const {
   filteredInventory,
   loading,
@@ -23,7 +23,7 @@ const {
   fetch,
   clearFilters,
   findByProductId,
-} = useInventory({ productNames: names });
+} = useInventory({ productNames: names, products });
 
 // Sheet state
 const sheetOpen = ref(false);

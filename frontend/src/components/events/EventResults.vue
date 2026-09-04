@@ -1,48 +1,38 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { LineExpansion, Quantity, Requirement } from '../../types/api';
+import type { LineExpansion, Requirement, Shortage } from '../../types/api';
+import { formatWhen } from '../../lib/datetime';
 import { es } from '../../lib/i18n/es';
 import RequirementTable from '../ui/RequirementTable.vue';
 import StockBar from '../ui/StockBar.vue';
 
 const props = defineProps<{
   rawMaterials: Requirement[];
+  shortages: Shortage[];
   perLine: LineExpansion[];
-  liveStock: Record<string, Quantity>;
   productNames: Record<string, string>;
+  calculatedAt?: string;
 }>();
 
 const comparisons = computed(() =>
-  props.rawMaterials.map((row) => {
-    const have = props.liveStock[row.product_id] ?? '0';
-    const short = isShortage(row.quantity, have);
+  props.shortages.map((row) => {
     const unit = unitLabel(row.unit);
     const name = props.productNames[row.product_id] ?? row.product_id;
+    const short = row.shortage !== '0' && !row.shortage.startsWith('-');
     const statusText = short
-      ? es.events.shortBy.replace('{qty}', shortfall(row.quantity, have)).replace('{unit}', unit)
-      : es.events.covered.replace('{have}', have).replace('{need}', row.quantity).replace('{unit}', unit);
+      ? es.events.shortBy.replace('{qty}', row.shortage).replace('{unit}', unit)
+      : es.events.covered.replace('{have}', row.have).replace('{need}', row.need).replace('{unit}', unit);
     return {
       id: row.product_id,
       name,
-      need: row.quantity,
-      have,
+      need: row.need,
+      have: row.have,
       unit,
       short,
       statusText,
     };
   })
 );
-
-// ponytail: JS number only for shortage display; API quantities stay strings.
-function isShortage(need: string, have: string): boolean {
-  return Number(need) > Number(have);
-}
-
-function shortfall(need: string, have: string): string {
-  const value = Number(need) - Number(have);
-  if (!Number.isFinite(value)) return need;
-  return String(Math.round(value * 10000) / 10000);
-}
 
 function unitLabel(unit: string): string {
   const labels = es.units as Record<string, string>;
@@ -57,6 +47,9 @@ function lineTitle(line: LineExpansion): string {
 
 <template>
   <div class="results" role="region" :aria-label="es.calculations.results" aria-live="polite">
+    <p v-if="calculatedAt" class="when">
+      {{ es.calculations.calculatedAt.replace('{when}', formatWhen(calculatedAt)) }}
+    </p>
     <section class="block">
       <h3 class="block__title">{{ es.events.consolidated }}</h3>
       <RequirementTable
@@ -126,6 +119,9 @@ function lineTitle(line: LineExpansion): string {
       <p v-if="perLine.length === 0">{{ es.events.noLines }}</p>
       <article v-for="(line, index) in perLine" :key="`${line.product_id}-${index}`" class="line">
         <h4 class="line__title">{{ lineTitle(line) }}</h4>
+        <p v-if="line.incomplete?.length" class="incomplete" role="status">
+          {{ es.calculations.incomplete }}: {{ line.incomplete.join(', ') }}
+        </p>
         <RequirementTable
           v-if="line.immediate?.length"
           :rows="line.immediate"
@@ -153,10 +149,22 @@ function lineTitle(line: LineExpansion): string {
 }
 
 .block__title,
+.incomplete {
+  margin: 0;
+  color: var(--color-error);
+  font-size: 0.875rem;
+}
+
 .line__title {
   margin: 0;
   font-family: var(--font-body);
   font-weight: 700;
+}
+
+.when {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
 }
 
 .block__title {

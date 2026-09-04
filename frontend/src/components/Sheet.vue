@@ -59,6 +59,7 @@ function handleOpenChange(open: boolean) {
 .sheet-overlay {
   position: fixed;
   inset: 0;
+  width: 100vw;
   z-index: 300;
   background: rgb(56 47 45 / 0.32);
   animation: fadeIn var(--duration-base) var(--ease-out);
@@ -154,7 +155,10 @@ function handleOpenChange(open: boolean) {
 
 .sheet-body {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 1.5rem;
 }
 
@@ -171,10 +175,27 @@ function handleOpenChange(open: boolean) {
   flex-shrink: 0;
 }
 
-/* Mobile responsive */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .sheet-content {
-    max-width: 100%;
+    inset: 0;
+    width: 100vw;
+    max-width: 100vw;
+    border-radius: 0;
+  }
+
+  .sheet-header,
+  .sheet-body,
+  .sheet-footer {
+    padding: 1rem;
+  }
+
+  .sheet-title {
+    font-size: 1.375rem;
+  }
+
+  .sheet-close {
+    width: 2.75rem;
+    height: 2.75rem;
   }
 }
 

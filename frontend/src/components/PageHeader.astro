@@ -13,7 +13,7 @@ const { title, description, eyebrow } = Astro.props;
     {eyebrow && (
       <p class="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-(--color-primary)">{eyebrow}</p>
     )}
-    <h1 class="m-0 font-(--font-body) text-[1.75rem] font-bold leading-tight text-(--color-text)">{title}</h1>
+    <h1 class="m-0 text-[1.75rem] font-bold leading-tight text-(--color-text)">{title}</h1>
     {description && <p class="mt-1 m-0 max-w-2xl text-sm leading-5 text-(--color-text-muted)">{description}</p>}
   </div>
   {Astro.slots.has('actions') && (

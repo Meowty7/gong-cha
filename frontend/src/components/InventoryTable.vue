@@ -34,6 +34,7 @@ const emit = defineEmits<Emits>();
           </td>
           <td class="inventory-table__quantity tabular-nums" :data-label="es.inventory.quantity">
             {{ item.quantity }} {{ item.unit }}
+            <span v-if="item.quantity === '0'" class="inventory-table__empty">{{ es.inventory.unregistered }}</span>
           </td>
           <td :data-label="es.inventory.location">{{ item.location }}</td>
           <td class="data-table__actions inventory-table__actions">
@@ -60,5 +61,12 @@ const emit = defineEmits<Emits>();
 .inventory-table__quantity {
   font-weight: 600;
   color: var(--color-primary);
+}
+
+.inventory-table__empty {
+  display: block;
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
 }
 </style>

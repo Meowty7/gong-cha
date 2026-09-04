@@ -167,7 +167,9 @@ export interface DirectCalculationRequest {
 export interface DirectCalculationResponse {
   max_units: Quantity;
   limiting_component: string;
+  consumed: Requirement[];
   leftovers: Requirement[];
+  calculated_at?: Timestamp;
 }
 
 // Inverse requirements calculation
@@ -180,6 +182,7 @@ export interface InverseCalculationResponse {
   immediate: Requirement[];
   raw_materials: Requirement[];
   incomplete?: string[];
+  calculated_at?: Timestamp;
 }
 
 // ============================================================================
@@ -204,9 +207,28 @@ export interface LineExpansion {
   incomplete?: string[];
 }
 
+export interface Shortage {
+  product_id: string;
+  need: Quantity;
+  have: Quantity;
+  shortage: Quantity;
+  unit: Unit;
+}
+
 export interface EventPlanningResponse {
   raw_materials: Requirement[];
   per_line: LineExpansion[];
+  incomplete?: string[];
+  shortages?: Shortage[];
+  calculated_at?: Timestamp;
+}
+
+export interface CalculationRun {
+  run_id: number;
+  run_type: string;
+  request: Record<string, unknown>;
+  result: Record<string, unknown>;
+  created_at: Timestamp;
 }
 
 // ============================================================================
@@ -229,4 +251,5 @@ export interface ProductionConfirmationRequest {
 export interface ProductionResponse {
   consumed: Requirement[];
   leftovers: Requirement[];
+  calculated_at?: Timestamp;
 }
