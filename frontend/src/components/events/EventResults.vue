@@ -68,7 +68,7 @@ function lineTitle(line: LineExpansion): string {
 
     <section class="block">
       <h3 class="block__title">{{ es.events.compareCaption }}</h3>
-      <table class="cmp" :aria-label="es.events.compareCaption">
+      <table class="data-table cmp" :aria-label="es.events.compareCaption">
         <caption class="sr-only">{{ es.events.compareCaption }}</caption>
         <thead>
           <tr>
@@ -155,7 +155,8 @@ function lineTitle(line: LineExpansion): string {
 .block__title,
 .line__title {
   margin: 0;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
+  font-weight: 700;
 }
 
 .block__title {
@@ -171,25 +172,8 @@ function lineTitle(line: LineExpansion): string {
   border-top: 1px solid var(--color-border);
 }
 
-.cmp {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.875rem;
-}
-
-.cmp th,
 .cmp td {
-  padding: 0.75rem;
-  text-align: left;
-  border-bottom: 1px solid var(--color-border);
-  vertical-align: top;
-}
-
-.cmp th {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
+  white-space: normal;
 }
 
 .status {
@@ -228,7 +212,7 @@ function lineTitle(line: LineExpansion): string {
     display: grid;
     grid-template-columns: 8rem 1fr;
     gap: 0.5rem;
-    border: 0;
+    box-shadow: none;
     padding: 0.25rem 0;
   }
 

@@ -98,11 +98,6 @@ label {
   color: var(--color-text-muted);
 }
 
-.field-error {
-  font-size: 0.8125rem;
-  color: var(--color-error);
-}
-
 .actions {
   display: flex;
   flex-wrap: wrap;

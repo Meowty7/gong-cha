@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
+import { TabsContent, TabsIndicator, TabsList, TabsRoot, TabsTrigger } from 'reka-ui';
 import { useProductIndex } from '../../composables/useProductIndex';
 import { useInventorySnapshot } from '../../composables/useInventorySnapshot';
 import { useEventPlanning } from '../../composables/useEventPlanning';
@@ -51,46 +52,40 @@ onMounted(() => {
     <ErrorBanner :error="catalogError ?? stockError ?? error" :dismissible="!!error" @dismiss="dismissError" />
 
     <form class="card form" @submit.prevent="submit">
-      <fieldset class="modes">
-        <legend class="sr-only">{{ es.events.modeLegend }}</legend>
-        <label class="mode">
-          <input v-model="mode" type="radio" value="stored" />
-          <span>{{ es.events.modeStored }}</span>
-        </label>
-        <label class="mode">
-          <input v-model="mode" type="radio" value="inline" />
-          <span>{{ es.events.modeInline }}</span>
-        </label>
-      </fieldset>
+      <TabsRoot v-model="mode" class="tabs">
+        <TabsList class="tabs__list" :aria-label="es.events.modeLegend">
+          <TabsIndicator class="tabs__indicator" />
+          <TabsTrigger value="stored" class="tabs__trigger">{{ es.events.modeStored }}</TabsTrigger>
+          <TabsTrigger value="inline" class="tabs__trigger">{{ es.events.modeInline }}</TabsTrigger>
+        </TabsList>
 
-      <div v-if="mode === 'stored'" class="stored">
-        <h2 class="title">{{ es.events.storedTitle }}</h2>
-        <p class="muted">{{ es.events.storedDescription }}</p>
-        <div class="field">
-          <label class="field__label" for="event-id">{{ es.events.eventId }}</label>
-          <input
-            id="event-id"
-            v-model="eventId"
-            class="input"
-            type="text"
-            autocomplete="off"
+        <TabsContent value="stored" class="tabs__content stored">
+          <p class="muted">{{ es.events.storedDescription }}</p>
+          <div class="field">
+            <label class="field__label" for="event-id">{{ es.events.eventId }}</label>
+            <input
+              id="event-id"
+              v-model="eventId"
+              class="input"
+              type="text"
+              autocomplete="off"
+            />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="inline" class="tabs__content inline">
+          <p class="muted">{{ es.events.inlineDescription }}</p>
+          <DemandRowList
+            :rows="rows"
+            :products="products"
+            @add="addRow"
+            @remove="removeRow"
+            @update="updateRow"
           />
-        </div>
-      </div>
+        </TabsContent>
+      </TabsRoot>
 
-      <div v-else class="inline">
-        <h2 class="title">{{ es.events.inlineTitle }}</h2>
-        <p class="muted">{{ es.events.inlineDescription }}</p>
-        <DemandRowList
-          :rows="rows"
-          :products="products"
-          @add="addRow"
-          @remove="removeRow"
-          @update="updateRow"
-        />
-      </div>
-
-      <p v-if="fieldError" class="error" role="alert">{{ fieldError }}</p>
+      <p v-if="fieldError" class="field-error" role="alert">{{ fieldError }}</p>
       <button type="submit" class="btn btn-primary" :disabled="!canSubmit">
         {{ pending ? es.actions.loading : es.actions.calculate }}
       </button>
@@ -118,32 +113,74 @@ onMounted(() => {
   gap: 1.25rem;
 }
 
-.title {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: 1.75rem;
-}
-
 .muted {
   margin: 0;
   color: var(--color-text-muted);
 }
 
-.modes {
+/* Ported from Park UI `tabs` recipe (variant line, size md). */
+.tabs {
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin: 0;
-  padding: 0;
-  border: 0;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1.25rem;
 }
 
-.mode {
+.tabs__list {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tabs__trigger {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  min-height: 2.75rem;
+  height: 2.5rem;
+  min-width: 2.5rem;
+  padding: 0 1rem;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 0.875rem;
   font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  outline: 0;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.tabs__trigger[data-state='active'] {
+  color: var(--color-primary-dark);
+}
+
+.tabs__trigger:focus-visible {
+  z-index: 1;
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.tabs__indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: var(--reka-tabs-indicator-size);
+  height: 2px;
+  transform: translateX(var(--reka-tabs-indicator-position)) translateY(1px);
+  background: var(--color-primary);
+  transition:
+    width var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out);
+}
+
+.tabs__content {
+  width: 100%;
+  outline: 0;
 }
 
 .field {
@@ -156,12 +193,6 @@ onMounted(() => {
 .field__label {
   font-size: 0.8125rem;
   font-weight: 600;
-}
-
-.error {
-  margin: 0;
-  color: var(--color-error);
-  font-size: 0.875rem;
 }
 
 .fade-enter-active,

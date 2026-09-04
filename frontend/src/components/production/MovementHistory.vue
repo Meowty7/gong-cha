@@ -48,11 +48,11 @@ function formatWhen(value: string): string {
         </thead>
         <tbody>
           <tr v-for="row in movements" :key="row.movement_id">
-            <th scope="row">{{ row.product_id }} — {{ nameOf(row.product_id) }}</th>
-            <td class="num tabular-nums">{{ row.quantity_change }} {{ unitLabel(row.unit) }}</td>
-            <td class="num tabular-nums">{{ row.balance_after }} {{ unitLabel(row.unit) }}</td>
-            <td>{{ reasonLabel(row.reason) }}</td>
-            <td>{{ formatWhen(row.created_at) }}</td>
+            <th scope="row" :data-label="es.production.colProduct">{{ row.product_id }} — {{ nameOf(row.product_id) }}</th>
+            <td class="num tabular-nums" :data-label="es.production.colChange">{{ row.quantity_change }} {{ unitLabel(row.unit) }}</td>
+            <td class="num tabular-nums" :data-label="es.production.colBalance">{{ row.balance_after }} {{ unitLabel(row.unit) }}</td>
+            <td :data-label="es.production.colReason">{{ reasonLabel(row.reason) }}</td>
+            <td :data-label="es.production.colWhen">{{ formatWhen(row.created_at) }}</td>
           </tr>
         </tbody>
       </table>
@@ -67,7 +67,8 @@ function formatWhen(value: string): string {
 }
 
 h3 {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
+  font-weight: 700;
   font-size: 1.5rem;
 }
 
@@ -90,7 +91,6 @@ td {
   padding: 0.75rem;
   border-bottom: 1px solid var(--color-border);
   text-align: left;
-  white-space: nowrap;
 }
 
 .num {

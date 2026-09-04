@@ -112,7 +112,6 @@ function nameOf(id: string, names: ComparisonRow[]): string {
   justify-self: start;
   margin: 0;
   padding: 0.5rem 0.75rem;
-  border-radius: 0.25rem;
   font-size: 0.8125rem;
   font-weight: 600;
 }
@@ -150,7 +149,8 @@ function nameOf(id: string, names: ComparisonRow[]): string {
 }
 
 h3 {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
+  font-weight: 700;
   font-size: 1.25rem;
   margin-bottom: 0.75rem;
 }

@@ -38,22 +38,22 @@ function barWidth(after: string, before: string): string {
             <th scope="col" class="num">{{ es.production.colBefore }}</th>
             <th scope="col" class="num">{{ es.production.colConsumed }}</th>
             <th scope="col" class="num">{{ es.production.colAfter }}</th>
-            <th scope="col">{{ es.production.deducted }}</th>
+            <th scope="col">{{ committed ? es.production.deducted : es.production.projected }}</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="row in props.rows" :key="row.product_id">
-            <th scope="row">
+            <th scope="row" :data-label="es.production.colProduct">
               <span class="id">{{ row.product_id }}</span>
               <span class="name">{{ row.name }}</span>
             </th>
-            <td class="num tabular-nums">{{ row.before }} {{ unitLabel(row.unit) }}</td>
-            <td class="num tabular-nums">−{{ row.consumed }} {{ unitLabel(row.unit) }}</td>
-            <td class="num tabular-nums">{{ row.after }} {{ unitLabel(row.unit) }}</td>
-            <td>
+            <td class="num tabular-nums" :data-label="es.production.colBefore">{{ row.before }} {{ unitLabel(row.unit) }}</td>
+            <td class="num tabular-nums" :data-label="es.production.colConsumed">−{{ row.consumed }} {{ unitLabel(row.unit) }}</td>
+            <td class="num tabular-nums" :data-label="es.production.colAfter">{{ row.after }} {{ unitLabel(row.unit) }}</td>
+            <td :data-label="committed ? es.production.deducted : es.production.projected">
               <div class="bar-row">
                 <span class="icon" aria-hidden="true">↓</span>
-                <span class="sr-only">{{ es.production.deducted }}</span>
+                <span class="sr-only">{{ committed ? es.production.deducted : es.production.projected }}</span>
                 <span class="bar" :title="`${row.after} / ${row.before}`">
                   <span class="bar-fill" :style="{ width: barWidth(row.after, row.before) }" />
                 </span>
@@ -73,7 +73,8 @@ function barWidth(after: string, before: string): string {
 }
 
 .heading {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
+  font-weight: 700;
   font-size: 1.25rem;
 }
 
@@ -127,7 +128,6 @@ td {
   width: 6rem;
   height: 0.5rem;
   background: var(--color-border);
-  border-radius: 999px;
   overflow: hidden;
 }
 
