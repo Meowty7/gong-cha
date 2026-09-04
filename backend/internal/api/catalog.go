@@ -196,9 +196,14 @@ func (h *CatalogHandler) upsertInventory(w http.ResponseWriter, r *http.Request)
 		writeError(w, http.StatusBadRequest, "validation_error", "unit must match catalog unit")
 		return
 	}
-	loc := strings.TrimSpace(dto.Location)
-	if loc == "" {
-		loc = "Bodega principal"
+	loc := "Bodega principal"
+	if existing, err := h.inventory.Get(r.Context(), pid); err == nil {
+		if existing.Location != "" {
+			loc = existing.Location
+		}
+	} else if !errors.Is(err, domain.ErrNotFound) {
+		writeDomainError(w, err)
+		return
 	}
 	b := domain.InventoryBalance{
 		ProductID: pid,

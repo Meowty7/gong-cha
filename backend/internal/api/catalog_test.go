@@ -253,6 +253,27 @@ func TestUpsertInventory_Success(t *testing.T) {
 	}
 }
 
+func TestUpsertInventory_IgnoresClientLocation(t *testing.T) {
+	inv := &fakeInventoryStore{balances: map[string]domain.InventoryBalance{
+		"MP001": {ProductID: "MP001", Quantity: decimal.NewFromInt(50), Unit: domain.Gram, Location: "Bodega principal"},
+	}}
+	ps := newFakeProductStore(domain.Product{ID: "MP001", Name: "Azucar", Type: domain.RawMaterial, Unit: domain.Gram})
+	s := newCatalogServer(ps, inv)
+	rec := doJSON(t, s, http.MethodPut, "/api/v1/inventory/MP001", upsertInventoryDTO{
+		Quantity: "80", Unit: "g", Location: "Barra",
+	})
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", rec.Code, rec.Body)
+	}
+	got := inv.balances["MP001"]
+	if got.Location != "Bodega principal" {
+		t.Fatalf("location must stay official, got %q", got.Location)
+	}
+	if !got.Quantity.Equal(decimal.NewFromInt(80)) {
+		t.Fatalf("expected quantity 80, got %s", got.Quantity)
+	}
+}
+
 func TestUpsertInventory_UnitMismatch(t *testing.T) {
 	ps := newFakeProductStore(domain.Product{ID: "MP001", Name: "Azucar", Type: domain.RawMaterial, Unit: domain.Gram})
 	s := newCatalogServer(ps, newFakeInventoryStore())
