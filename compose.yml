@@ -1,3 +1,5 @@
+name: gongcha
+
 services:
   db:
     image: postgres:18.6
@@ -7,16 +9,85 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-gongcha}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gongcha}
       POSTGRES_DB: ${POSTGRES_DB:-gongcha_cup}
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      PGDATA: /var/lib/postgresql/data
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./backend/migrations:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gongcha} -d ${POSTGRES_DB:-gongcha_cup}"]
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - gongcha-net
+
+  seed:
+    image: gongcha-api:local
+    build:
+      context: ./backend
+    container_name: gongcha_seed
+    restart: "no"
+    entrypoint: ["/seed"]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-gongcha}:${POSTGRES_PASSWORD:-gongcha}@db:5432/${POSTGRES_DB:-gongcha_cup}?sslmode=disable
+      SERVER_PORT: "8080"
+      CORS_ORIGIN: http://localhost,http://127.0.0.1,http://localhost:4321,http://127.0.0.1:4321
+      APP_ENV: ${APP_ENV:-development}
+      SEED_DATA_DIR: /data
+    volumes:
+      - ./xlsx_export:/data:ro
+    networks:
+      - gongcha-net
+
+  api:
+    image: gongcha-api:local
+    build:
+      context: ./backend
+    container_name: gongcha_api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      seed:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-gongcha}:${POSTGRES_PASSWORD:-gongcha}@db:5432/${POSTGRES_DB:-gongcha_cup}?sslmode=disable
+      SERVER_PORT: "8080"
+      CORS_ORIGIN: http://localhost,http://127.0.0.1,http://localhost:4321,http://127.0.0.1:4321
+      APP_ENV: ${APP_ENV:-development}
+    healthcheck:
+      test: ["CMD", "/healthcheck"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - gongcha-net
+
+  web:
+    build:
+      context: ./frontend
+      # Do not pass host PUBLIC_API_URL — empty ARG means same-origin /api via nginx.
+    container_name: gongcha_web
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT:-80}:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - gongcha-net
+
+networks:
+  gongcha-net:
+    driver: bridge
 
 volumes:
   pgdata:
