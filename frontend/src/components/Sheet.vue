@@ -60,8 +60,8 @@ function handleOpenChange(open: boolean) {
   position: fixed;
   inset: 0;
   z-index: 300;
-  background: rgba(0, 0, 0, 0.5);
-  animation: fadeIn 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgb(56 47 45 / 0.32);
+  animation: fadeIn var(--duration-base) var(--ease-out);
 }
 
 @keyframes fadeIn {
@@ -84,8 +84,9 @@ function handleOpenChange(open: boolean) {
   display: flex;
   flex-direction: column;
   background: var(--color-bg-surface);
-  box-shadow: 0 10px 15px -1px rgb(0 0 0 / 0.1);
-  animation: slideInRight 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  box-shadow: var(--shadow-md);
+  animation: slideInRight var(--duration-base) var(--ease-out);
 }
 
 @keyframes slideInRight {
@@ -112,9 +113,9 @@ function handleOpenChange(open: boolean) {
 }
 
 .sheet-title {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 1.5rem;
-  font-weight: 400;
+  font-weight: 700;
   color: var(--color-text);
   margin: 0;
   line-height: 1.2;
@@ -136,10 +137,13 @@ function handleOpenChange(open: boolean) {
   justify-content: center;
   background: transparent;
   border: 1px solid var(--color-border);
-  border-radius: 0.375rem;
+  border-radius: var(--radius-sm);
   color: var(--color-text-muted);
   cursor: pointer;
-  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
 }
 
 .sheet-close:hover {
@@ -162,6 +166,9 @@ function handleOpenChange(open: boolean) {
   padding: 1.5rem;
   border-top: 1px solid var(--color-border);
   background: var(--color-bg-warm);
+  position: sticky;
+  bottom: 0;
+  flex-shrink: 0;
 }
 
 /* Mobile responsive */

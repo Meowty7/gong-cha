@@ -19,7 +19,6 @@ defineProps<{
   padding: 1.25rem;
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
   min-width: 0;
 }
 
@@ -32,7 +31,8 @@ defineProps<{
 
 .metric__value {
   margin: 0;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
+  font-weight: 700;
   font-size: 2rem;
   line-height: 1.15;
   color: var(--color-text);

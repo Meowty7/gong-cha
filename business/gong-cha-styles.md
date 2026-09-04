@@ -46,11 +46,11 @@ Two-font system, both loaded as web fonts:
 
 | Use | Family | Character |
 |---|---|---|
-| **Display / headings** | `Vidaloka` | A high-contrast serif with elegant, fashion-magazine feel. Used for hero "How Tea is Meant to Be" and section titles. Communicates craft and heritage. |
+| **Display / headings** | `Sigokae` | Display face for hero titles, page headers, and large metrics. Used for headings such as "How Tea is Meant to Be" and section titles. Communicates craft and heritage. |
 | **Body / UI** | `Public Sans` | A clean, neutral sans-serif (Google Fonts). Highly legible at small sizes; used for descriptions, nav, buttons, FAQ. |
 | **Code / mono** | `ui-monospace, SFMono-Regular, Menlo, …` | System stack — utility only. |
 
-**Type pairing intent:** the serif/sans contrast (Vidaloka × Public Sans) is a classic "editorial premium" pairing — it lets the brand feel artisanal (serif headlines) while keeping the operational/UI text modern and frictionless (sans body).
+**Type pairing intent:** the display/sans contrast (Sigokae × Public Sans) lets the brand feel artisanal in headlines while keeping operational/UI text modern and frictionless (sans body).
 
 ## Layout & Composition
 
@@ -94,5 +94,5 @@ Two-font system, both loaded as web fonts:
 
 - **Framework:** Astro v4.16.19 — static-first, component islands. Good fit for a content-driven brand site with light interactivity.
 - **CSS:** bundled per-route (`_path_.ChQoQpgz.css`, `_path_.3B_A4SQ-.css`); CSS variables and alpha-shade ramps suggest a small design-token system.
-- **Fonts:** `Vidaloka` + `Public Sans` loaded as web fonts.
+- **Fonts:** `Sigokae` + `Public Sans` loaded as web fonts.
 - **No heavy frameworks** (React/Vue) visible in the static HTML — islands are minimal.

@@ -109,14 +109,12 @@ const percent = computed(() => {
 .stock__track {
   height: 0.5rem;
   background: var(--color-border);
-  border-radius: 999px;
   overflow: hidden;
 }
 
 .stock__fill {
   height: 100%;
   background: var(--color-primary);
-  border-radius: 999px;
 }
 
 .stock__fill--depleted {

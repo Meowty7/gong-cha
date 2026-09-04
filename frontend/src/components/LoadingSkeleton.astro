@@ -32,7 +32,7 @@ const { count = 3, variant = 'card', height } = Astro.props;
 
 .loading-skeleton--card {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
   gap: 1rem;
 }
 
@@ -44,7 +44,6 @@ const { count = 3, variant = 'card', height } = Astro.props;
 .loading-skeleton__item {
   position: relative;
   background: var(--color-bg-warm);
-  border-radius: 0.5rem;
   overflow: hidden;
 }
 
