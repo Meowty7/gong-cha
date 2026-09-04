@@ -55,6 +55,10 @@ docker compose up --build
 
 Las cantidades viajan como cadenas decimales. El cálculo no hardcodea los casos CP01–CP08; usa el BOM y el inventario vivos.
 
+## Astro en :4321 (opcional)
+
+Con el stack Docker arriba, `cd frontend && bun run dev` abre http://127.0.0.1:4321. `PUBLIC_API_URL` vacío: el navegador llama a `/api` y Vite lo reenvía a la API en :8080.
+
 ## Pruebas (opcional, hace falta Go / Bun)
 
 ```bash

@@ -63,6 +63,8 @@ services:
       timeout: 3s
       retries: 5
       start_period: 10s
+    ports:
+      - "${API_PORT:-8080}:8080"
     networks:
       - gongcha-net
 
