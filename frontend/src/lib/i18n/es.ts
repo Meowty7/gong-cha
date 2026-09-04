@@ -300,6 +300,38 @@ export const es = {
     unitsComplete: 'unidades completas',
     none: 'Ninguno',
   },
+
+  // ============================================================================
+  // Events
+  // ============================================================================
+  events: {
+    title: 'Eventos',
+    description: 'Consolida la demanda de un evento y compara insumos contra el inventario',
+    storedTitle: 'Evento guardado',
+    storedDescription: 'Calcula las líneas de demanda persistidas, por ejemplo EVT001',
+    inlineTitle: 'Demanda manual',
+    inlineDescription: 'Añade productos y cantidades. Los insumos compartidos se consolidan una sola vez',
+    eventId: 'Identificador de evento',
+    addDemand: 'Añadir línea',
+    removeDemand: 'Quitar línea',
+    emptyDemands: 'Añade al menos una línea de demanda con producto y cantidad',
+    invalidQuantity: 'Cada línea necesita una cantidad mayor que cero',
+    consolidated: 'Insumos consolidados',
+    consolidatedCaption: 'Materias primas sumadas en todo el evento, sin doble conteo',
+    perLine: 'Desglose por línea',
+    perLineCaption: 'Expansión de la línea de demanda',
+    shortage: 'Faltante',
+    enough: 'Cubierto',
+    compareCaption: 'Comparación de insumos consolidados contra existencias',
+    need: 'Necesario',
+    have: 'En inventario',
+    shortBy: 'Faltan {qty} {unit}',
+    covered: 'Alcanza: hay {have} y se necesitan {need} {unit}',
+    noLines: 'Sin líneas de resultado',
+    modeLegend: 'Modo de planificación',
+    modeStored: 'Usar evento guardado',
+    modeInline: 'Capturar demanda',
+  },
 } as const;
 
 /** Type-safe translation key accessor */
