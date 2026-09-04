@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useInventory } from '../composables/useInventory';
+import { useProductIndex } from '../composables/useProductIndex';
 import { upsertInventory } from '../lib/api/resources/inventory';
 import type { InventoryBalance, UpsertInventoryRequest, ApiError } from '../types/api';
 import { isApiError } from '../types/api';
@@ -8,8 +9,11 @@ import InventoryTable from './InventoryTable.vue';
 import InventoryAdjustmentForm from './InventoryAdjustmentForm.vue';
 import Sheet from './Sheet.vue';
 import ErrorBanner from './ErrorBanner.vue';
+import { humanizeError } from '../lib/api/errors';
+import { showToast } from '../composables/useToast';
 import { es } from '../lib/i18n/es';
 
+const { names, units, load: loadNames } = useProductIndex();
 const {
   filteredInventory,
   loading,
@@ -19,7 +23,7 @@ const {
   fetch,
   clearFilters,
   findByProductId,
-} = useInventory();
+} = useInventory({ productNames: names });
 
 // Sheet state
 const sheetOpen = ref(false);
@@ -30,6 +34,7 @@ const formError = ref<ApiError | Error | null>(null);
 
 onMounted(() => {
   fetch();
+  void loadNames();
 });
 
 function handleErrorDismiss() {
@@ -60,14 +65,16 @@ async function handleFormSubmit(data: UpsertInventoryRequest) {
 
   try {
     await upsertInventory(adjustingProductId.value, data);
-
-    // Refresh inventory list
     await fetch();
-    
-    // Close sheet
     closeSheet();
+    showToast({ title: es.toast.successTitle, description: es.inventory.adjustSuccess });
   } catch (err) {
     formError.value = isApiError(err) ? err : (err as Error);
+    showToast({
+      title: es.toast.errorTitle,
+      description: humanizeError(formError.value),
+      variant: 'error',
+    });
   } finally {
     formLoading.value = false;
   }
@@ -77,7 +84,7 @@ async function handleFormSubmit(data: UpsertInventoryRequest) {
 <template>
   <div class="inventory-workspace">
     <!-- Filters -->
-    <div class="inventory-controls">
+    <div class="toolbar inventory-controls">
       <div class="inventory-filters">
         <input
           v-model="searchQuery"
@@ -148,6 +155,7 @@ async function handleFormSubmit(data: UpsertInventoryRequest) {
       
       <InventoryTable
         :inventory="filteredInventory"
+        :product-names="names"
         @adjust="openAdjustSheet"
       />
     </div>
@@ -166,6 +174,7 @@ async function handleFormSubmit(data: UpsertInventoryRequest) {
       
       <InventoryAdjustmentForm
         :product-id="adjustingProductId"
+        :product-unit="units[adjustingProductId]"
         :current-balance="currentBalance"
         :loading="formLoading"
         @submit="handleFormSubmit"
@@ -200,12 +209,12 @@ async function handleFormSubmit(data: UpsertInventoryRequest) {
 
 .inventory-search {
   flex: 1;
-  min-width: 200px;
+  min-width: min(100%, 12rem);
   max-width: 400px;
 }
 
 .inventory-location-filter {
-  min-width: 200px;
+  min-width: min(100%, 12rem);
   max-width: 300px;
 }
 
@@ -244,7 +253,6 @@ async function handleFormSubmit(data: UpsertInventoryRequest) {
 .skeleton-row {
   height: 60px;
   background: var(--color-bg-warm);
-  border-radius: 0.375rem;
   position: relative;
   overflow: hidden;
 }

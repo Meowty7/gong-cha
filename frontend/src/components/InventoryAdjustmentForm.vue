@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type { InventoryBalance, UpsertInventoryRequest, Unit } from '../types/api';
 import { es } from '../lib/i18n/es';
 
 interface Props {
   /** Product ID for inventory adjustment */
   productId: string;
+  /** Catalog unit for this product; stock must use it. */
+  productUnit?: Unit;
   /** Current inventory balance (if exists) */
   currentBalance?: InventoryBalance;
   /** Form is submitting */
@@ -22,8 +24,12 @@ const emit = defineEmits<Emits>();
 
 // Form state
 const quantity = ref('');
-const unit = ref<Unit>('g');
 const location = ref('Bodega principal');
+const unit = computed(() => props.productUnit ?? props.currentBalance?.unit);
+const unitLabel = computed(() => {
+  const value = unit.value;
+  return value ? ((es.units as Record<string, string>)[value] ?? value) : '';
+});
 
 // Validation errors
 const errors = ref<Record<string, string>>({});
@@ -34,7 +40,6 @@ watch(
   (balance) => {
     if (balance) {
       quantity.value = balance.quantity;
-      unit.value = balance.unit;
       location.value = balance.location;
     }
   },
@@ -60,11 +65,15 @@ function validateForm(): boolean {
     errors.value.location = es.forms.required;
   }
 
+  if (!unit.value) {
+    errors.value.unit = es.forms.required;
+  }
+
   return Object.keys(errors.value).length === 0;
 }
 
 function handleSubmit() {
-  if (!validateForm()) {
+  if (!validateForm() || !unit.value) {
     return;
   }
 
@@ -125,22 +134,18 @@ function handleCancel() {
       </p>
     </div>
 
-    <!-- Unit -->
     <div class="form-field">
       <label for="inventory-unit" class="form-label">
         {{ es.product.unit }}
-        <span class="form-label__required">*</span>
       </label>
-      <select
+      <input
         id="inventory-unit"
-        v-model="unit"
+        type="text"
         class="input"
-        :disabled="loading"
-      >
-        <option value="g">{{ es.units.g }}</option>
-        <option value="ml">{{ es.units.ml }}</option>
-        <option value="unit">{{ es.units.unidad }}</option>
-      </select>
+        :value="unitLabel"
+        disabled
+      />
+      <p class="form-hint">{{ es.product.unitLocked }}</p>
     </div>
 
     <!-- Location -->
@@ -239,9 +244,9 @@ function handleCancel() {
 
 .form-validation-summary {
   padding: 0.75rem 1rem;
-  background: #fef2f2;
-  border: 1px solid #fca5a5;
-  border-radius: 0.375rem;
+  background: var(--color-error-soft);
+  border: 1px solid color-mix(in srgb, var(--color-error) 28%, var(--color-border));
+  border-radius: var(--radius-md);
 }
 
 .form-validation-summary__message {

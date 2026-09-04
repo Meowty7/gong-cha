@@ -11,6 +11,8 @@ import { isApiError } from '../types/api';
 export interface UseInventoryOptions {
   /** Auto-fetch on mount */
   immediate?: boolean;
+  /** Optional names so search matches "taro" as well as MP010 */
+  productNames?: Ref<Record<string, string>>;
 }
 
 export function useInventory(options: UseInventoryOptions = {}) {
@@ -69,7 +71,8 @@ export function useInventory(options: UseInventoryOptions = {}) {
       result = result.filter(
         (i) =>
           i.product_id.toLowerCase().includes(query) ||
-          i.location.toLowerCase().includes(query)
+          i.location.toLowerCase().includes(query) ||
+          (options.productNames?.value[i.product_id] ?? '').toLowerCase().includes(query)
       );
     }
 
