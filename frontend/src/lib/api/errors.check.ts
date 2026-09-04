@@ -37,6 +37,15 @@ assert(
   humanizeError({
     status: 409,
     code: 'conflict',
+    message: 'conflict: product is used in a recipe or event',
+  }) === es.errors.productInUse,
+  'API in-use delete is Spanish'
+);
+
+assert(
+  humanizeError({
+    status: 409,
+    code: 'conflict',
     message:
       'conflict: insert or update on table "recipe_components" violates foreign key constraint "recipe_components_component_product_id_fkey"',
   }) === es.errors.missingComponent,

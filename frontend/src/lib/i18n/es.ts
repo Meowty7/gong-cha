@@ -87,7 +87,7 @@ export const es = {
     duplicateComponent: 'La receta no puede repetir el mismo componente',
     selfComponent: 'Un producto no puede ser componente de su propia receta',
     duplicateProduct: 'Ya existe un producto con ese código',
-    productInUse: 'No se puede eliminar: el producto está en una receta o en inventario',
+    productInUse: 'No se puede eliminar: el producto está en una receta o en un evento',
     insufficientInventory: 'Inventario insuficiente. No se descontaron existencias.',
   },
 

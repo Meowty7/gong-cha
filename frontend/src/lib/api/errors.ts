@@ -78,7 +78,12 @@ export function humanizeError(error: unknown, fallback = es.errors.generic): str
   ) {
     return es.errors.duplicateProduct;
   }
-  if (lower.includes('update or delete') || lower.includes('is still referenced')) {
+  if (
+    lower.includes('update or delete') ||
+    lower.includes('is still referenced') ||
+    lower.includes('used in a recipe') ||
+    lower.includes('in use')
+  ) {
     return es.errors.productInUse;
   }
   if (lower.includes('invalid unit') || lower.includes('unit mismatch')) {

@@ -78,6 +78,73 @@ func TestProductRepository_UpdateMissing(t *testing.T) {
 	}
 }
 
+func TestProductRepository_DeleteClearsInventory(t *testing.T) {
+	db := testutil.New(t)
+	defer db.Stop()
+	db.Migrate(t)
+	pool := db.Pool(t)
+	defer pool.Close()
+	prepo := store.NewProductRepository(pool)
+	irepo := store.NewInventoryRepository(pool)
+	ctx := context.Background()
+
+	p := domain.Product{ID: "XA002", Name: "Te de XanChi", Type: "raw_material", Unit: "g"}
+	if err := prepo.Create(ctx, p); err != nil {
+		t.Fatalf("create: %v", err)
+	}
+	if err := irepo.Upsert(ctx, domain.InventoryBalance{
+		ProductID: p.ID, Quantity: decimal.NewFromInt(10), Unit: "g", Location: "Bodega",
+	}); err != nil {
+		t.Fatalf("upsert: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO inventory_movements (product_id, quantity_change, balance_after, unit, reason)
+		VALUES ($1, 10, 10, 'g', 'test')`, p.ID); err != nil {
+		t.Fatalf("movement: %v", err)
+	}
+	if err := prepo.Delete(ctx, p.ID); err != nil {
+		t.Fatalf("delete with inventory: %v", err)
+	}
+	if _, err := prepo.Get(ctx, p.ID); !isDomain(err, domain.ErrNotFound) {
+		t.Fatalf("expected product gone, got %v", err)
+	}
+	if _, err := irepo.Get(ctx, p.ID); !isDomain(err, domain.ErrNotFound) {
+		t.Fatalf("expected balance gone, got %v", err)
+	}
+}
+
+func TestProductRepository_DeleteBlockedByRecipe(t *testing.T) {
+	db := testutil.New(t)
+	defer db.Stop()
+	db.Migrate(t)
+	pool := db.Pool(t)
+	defer pool.Close()
+	prepo := store.NewProductRepository(pool)
+	rrepo := store.NewRecipeRepository(pool)
+	ctx := context.Background()
+
+	mp := domain.Product{ID: "MP099", Name: "Sugar", Type: "raw_material", Unit: "g"}
+	st := domain.Product{ID: "ST099", Name: "Syrup", Type: "semi_finished", Unit: "ml"}
+	if err := prepo.Create(ctx, mp); err != nil {
+		t.Fatalf("create mp: %v", err)
+	}
+	if err := prepo.Create(ctx, st); err != nil {
+		t.Fatalf("create st: %v", err)
+	}
+	if err := rrepo.Create(ctx,
+		domain.Recipe{ID: "R-ST099", ResultProductID: st.ID, BatchYield: decimal.NewFromInt(1000), YieldUnit: "ml"},
+		[]domain.RecipeComponent{{RecipeID: "R-ST099", ComponentProductID: mp.ID, Quantity: decimal.NewFromInt(600), Unit: "g"}},
+	); err != nil {
+		t.Fatalf("create recipe: %v", err)
+	}
+	if err := prepo.Delete(ctx, mp.ID); !isDomain(err, domain.ErrConflict) {
+		t.Fatalf("expected conflict for recipe component, got %v", err)
+	}
+	if _, err := prepo.Get(ctx, mp.ID); err != nil {
+		t.Fatalf("component should remain: %v", err)
+	}
+}
+
 func TestInventoryRepository_UpsertAndQuantity(t *testing.T) {
 	db := testutil.New(t)
 	defer db.Stop()

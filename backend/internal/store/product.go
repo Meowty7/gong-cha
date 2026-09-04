@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/gongcha-cup/backend/internal/domain"
@@ -81,14 +82,33 @@ func (r *ProductRepository) Update(ctx context.Context, p domain.Product) error 
 	return nil
 }
 
-// Delete removes a product. Returns ErrNotFound if missing.
+// Delete removes a product and its stock. Recipes and event demand still block.
 func (r *ProductRepository) Delete(ctx context.Context, id string) error {
-	ct, err := r.db.Exec(ctx, `DELETE FROM products WHERE product_id=$1`, id)
+	tx, commit, err := beginTx(ctx, r.db)
 	if err != nil {
+		return err
+	}
+	if commit {
+		defer tx.Rollback(ctx)
+	}
+	if _, err := tx.Exec(ctx, `DELETE FROM inventory_movements WHERE product_id=$1`, id); err != nil {
+		return mapError(err)
+	}
+	if _, err := tx.Exec(ctx, `DELETE FROM inventory_balances WHERE product_id=$1`, id); err != nil {
+		return mapError(err)
+	}
+	ct, err := tx.Exec(ctx, `DELETE FROM products WHERE product_id=$1`, id)
+	if err != nil {
+		if mapped := mapError(err); errors.Is(mapped, domain.ErrConflict) {
+			return fmt.Errorf("%w: product is used in a recipe or event", domain.ErrConflict)
+		}
 		return mapError(err)
 	}
 	if ct.RowsAffected() == 0 {
 		return fmt.Errorf("%w: product %q", domain.ErrNotFound, id)
+	}
+	if commit {
+		return tx.Commit(ctx)
 	}
 	return nil
 }
