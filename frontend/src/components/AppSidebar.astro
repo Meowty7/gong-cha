@@ -1,0 +1,167 @@
+---
+import { es } from '../lib/i18n/es';
+
+const currentPath = Astro.url.pathname;
+
+const navItems = [
+  { href: '/', label: es.nav.dashboard, icon: 'dashboard' },
+  { href: '/catalog', label: es.nav.catalog, icon: 'catalog' },
+  { href: '/inventory', label: es.nav.inventory, icon: 'inventory' },
+  { href: '/recipes', label: es.nav.recipes, icon: 'recipes' },
+  { href: '/calculations', label: es.nav.calculations, icon: 'calculations' },
+  { href: '/events', label: es.nav.events, icon: 'events' },
+  { href: '/production', label: es.nav.production, icon: 'production' },
+];
+
+function isActive(href: string): boolean {
+  if (href === '/') {
+    return currentPath === '/';
+  }
+  return currentPath.startsWith(href);
+}
+---
+
+<nav class="sidebar-nav" aria-label="Navegación principal">
+  <div class="sidebar-header">
+    <h1 class="sidebar-logo">
+      <a href="/" class="logo-link">
+        Gong Cha
+      </a>
+    </h1>
+  </div>
+  
+  <ul class="nav-list">
+    {navItems.map((item) => (
+      <li>
+        <a 
+          href={item.href}
+          class:list={['nav-link', { 'nav-link-active': isActive(item.href) }]}
+          aria-current={isActive(item.href) ? 'page' : undefined}
+        >
+          <span class="nav-icon" data-icon={item.icon} aria-hidden="true" />
+          <span class="nav-label">{item.label}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<style>
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: var(--space-6) 0;
+  }
+  
+  .sidebar-header {
+    padding: 0 var(--space-6) var(--space-6);
+    border-bottom: 1px solid var(--color-border);
+  }
+  
+  .sidebar-logo {
+    margin: 0;
+  }
+  
+  .logo-link {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+  
+  .logo-link:hover {
+    color: var(--color-primary-dark);
+  }
+  
+  .nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin: 0;
+    padding: var(--space-6) var(--space-4);
+    list-style: none;
+  }
+  
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--color-text);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+  }
+  
+  .nav-link:hover {
+    background: var(--color-bg-hover);
+    color: var(--color-primary);
+  }
+  
+  .nav-link-active {
+    background: var(--color-primary);
+    color: white;
+    font-weight: 600;
+  }
+  
+  .nav-link-active:hover {
+    background: var(--color-primary-dark);
+    color: white;
+  }
+  
+  .nav-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  
+  /* Icon representations using CSS (minimal approach) */
+  .nav-icon::before {
+    content: '';
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    background: currentColor;
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+  }
+  
+  .nav-icon[data-icon="dashboard"]::before {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Crect x='3' y='3' width='7' height='7'/%3E%3Crect x='14' y='3' width='7' height='7'/%3E%3Crect x='14' y='14' width='7' height='7'/%3E%3Crect x='3' y='14' width='7' height='7'/%3E%3C/svg%3E");
+  }
+  
+  .nav-icon[data-icon="catalog"]::before {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M4 19.5A2.5 2.5 0 0 1 6.5 17H20'/%3E%3Cpath d='M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z'/%3E%3C/svg%3E");
+  }
+  
+  .nav-icon[data-icon="inventory"]::before {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'/%3E%3Cpolyline points='3.27 6.96 12 12.01 20.73 6.96'/%3E%3Cline x1='12' y1='22.08' x2='12' y2='12'/%3E%3C/svg%3E");
+  }
+  
+  .nav-icon[data-icon="recipes"]::before {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpolyline points='14 2 14 8 20 8'/%3E%3Cline x1='16' y1='13' x2='8' y2='13'/%3E%3Cline x1='16' y1='17' x2='8' y2='17'/%3E%3Cpolyline points='10 9 9 9 8 9'/%3E%3C/svg%3E");
+  }
+  
+  .nav-icon[data-icon="calculations"]::before {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Crect x='4' y='2' width='16' height='20' rx='2'/%3E%3Cline x1='8' y1='6' x2='16' y2='6'/%3E%3Cline x1='8' y1='10' x2='16' y2='10'/%3E%3Cline x1='8' y1='14' x2='16' y2='14'/%3E%3Cline x1='8' y1='18' x2='12' y2='18'/%3E%3C/svg%3E");
+  }
+  
+  .nav-icon[data-icon="events"]::before {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E");
+  }
+  
+  .nav-icon[data-icon="production"]::before {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpolyline points='16 18 22 12 16 6'/%3E%3Cpolyline points='8 6 2 12 8 18'/%3E%3C/svg%3E");
+  }
+  
+  .nav-label {
+    flex: 1;
+  }
+</style>
