@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { ApiError } from '../types/api';
-import { isApiError } from '../types/api';
+import { humanizeError } from '../lib/api/errors';
 import { es } from '../lib/i18n/es';
 
 interface Props {
   error: ApiError | Error | null;
+  title?: string;
+  text?: string;
   dismissible?: boolean;
 }
 
@@ -18,15 +21,9 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>();
 
-function getErrorMessage(error: ApiError | Error | null): string {
-  if (!error) return '';
-  
-  if (isApiError(error)) {
-    return error.message;
-  }
-  
-  return error.message || es.errors.generic;
-}
+const message = computed(() => props.text || humanizeError(props.error));
+const heading = computed(() => props.title || es.errors.generic);
+const detail = computed(() => (message.value === heading.value ? '' : message.value));
 
 function handleDismiss() {
   if (props.dismissible) {
@@ -42,9 +39,15 @@ function handleDismiss() {
     role="alert"
     aria-live="assertive"
   >
-    <div class="error-banner__icon" aria-hidden="true">⚠</div>
+    <span class="error-banner__icon" aria-hidden="true">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="8" cy="8" r="6" />
+        <path d="M8 5v3.25M8 11h.01" />
+      </svg>
+    </span>
     <div class="error-banner__content">
-      <p class="error-banner__message">{{ getErrorMessage(error) }}</p>
+      <p class="error-banner__title">{{ detail ? heading : message }}</p>
+      <p v-if="detail" class="error-banner__description">{{ detail }}</p>
     </div>
     <button
       v-if="dismissible"
@@ -53,59 +56,77 @@ function handleDismiss() {
       :aria-label="es.actions.close"
       @click="handleDismiss"
     >
-      ×
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+        <path d="M4 4l8 8M12 4l-8 8" />
+      </svg>
     </button>
   </div>
 </template>
 
 <style scoped>
+/* Ported from Park UI `alert` recipe (variant subtle, status error, size md). */
 .error-banner {
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
+  width: 100%;
   padding: 1rem;
-  background: #fef2f2;
-  border: 1px solid #fca5a5;
-  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  background: var(--color-error-soft);
+  border-radius: var(--radius-md);
   color: var(--color-error);
 }
 
 .error-banner__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  font-size: 1.25rem;
-  line-height: 1;
+  margin-top: 0.125rem;
+}
+
+.error-banner__icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .error-banner__content {
+  display: flex;
   flex: 1;
+  flex-direction: column;
+  gap: 0.25rem;
   min-width: 0;
 }
 
-.error-banner__message {
-  font-size: 0.875rem;
-  line-height: 1.5;
+.error-banner__title {
   margin: 0;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.error-banner__description {
+  margin: 0;
+  line-height: 1.5;
+  color: color-mix(in srgb, var(--color-error) 80%, var(--color-text));
 }
 
 .error-banner__dismiss {
   flex-shrink: 0;
-  width: 1.5rem;
-  height: 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: grid;
+  place-items: center;
   background: transparent;
   border: none;
-  border-radius: 0.25rem;
-  color: var(--color-error);
-  font-size: 1.5rem;
-  line-height: 1;
+  border-radius: var(--radius-sm);
+  color: inherit;
   cursor: pointer;
-  transition: background 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color var(--duration-fast) var(--ease-out);
 }
 
 .error-banner__dismiss:hover {
-  background: rgba(220, 38, 38, 0.1);
+  background: color-mix(in srgb, var(--color-error) 10%, transparent);
 }
 
 .error-banner__dismiss:focus-visible {
