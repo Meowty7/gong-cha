@@ -1,14 +1,13 @@
 ---
 import AppLayout from '../layouts/AppLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
 import DashboardWorkspace from '../components/DashboardWorkspace.vue';
 import { es } from '../lib/i18n/es';
 ---
 
 <AppLayout title={es.dashboard.title} description={es.dashboard.description}>
-  <header class="mb-8">
-    <p class="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-(--color-primary)">Gong Cha / Operaciones</p>
-    <h1 class="font-(--font-display) text-4xl font-normal leading-tight text-(--color-text) sm:text-5xl">{es.dashboard.title}</h1>
-    <p class="mt-3 max-w-3xl text-base leading-6 text-(--color-text-muted)">{es.dashboard.description}</p>
-  </header>
-  <DashboardWorkspace client:load />
+  <div class="mx-auto max-w-7xl">
+    <PageHeader title={es.dashboard.title} />
+    <DashboardWorkspace client:load />
+  </div>
 </AppLayout>
