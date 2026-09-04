@@ -1,0 +1,135 @@
+<script setup lang="ts">
+import { es } from '../../lib/i18n/es';
+import { formatUnit, type RecipeTreeNode } from '../../lib/recipes/logic';
+import type { Product, Recipe } from '../../types/api';
+import RecipeTree from './RecipeTree.vue';
+
+interface Props {
+  recipe: Recipe | null;
+  nodes: RecipeTreeNode[];
+  products: Product[];
+  loading: boolean;
+}
+
+interface Emits {
+  (e: 'edit', id: string): void;
+}
+
+defineProps<Props>();
+const emit = defineEmits<Emits>();
+
+function productName(products: Product[], id: string): string {
+  return products.find((product) => product.product_id === id)?.name ?? id;
+}
+</script>
+
+<template>
+  <section class="recipe-detail" :aria-busy="loading">
+    <div v-if="loading" class="recipe-detail__loading" aria-live="polite">
+      <div class="skeleton-line" />
+      <div class="skeleton-line skeleton-line--short" />
+      <div class="skeleton-line" />
+      <span class="sr-only">{{ es.recipes.loadingDetail }}</span>
+    </div>
+
+    <div v-else-if="!recipe" class="recipe-detail__empty" role="status">
+      {{ es.recipes.selectRecipe }}
+    </div>
+
+    <template v-else>
+      <header class="recipe-detail__header">
+        <div>
+          <h2 class="recipe-detail__title">{{ recipe.recipe_id }}</h2>
+          <p class="recipe-detail__meta">
+            {{ productName(products, recipe.product_result_id) }}
+            <span class="recipe-detail__id">{{ recipe.product_result_id }}</span>
+          </p>
+          <p class="recipe-detail__yield tabular-nums">
+            {{ es.recipes.batchYield }}:
+            {{ recipe.batch_yield }} {{ formatUnit(recipe.yield_unit) }}
+          </p>
+        </div>
+        <button
+          type="button"
+          class="btn btn-primary"
+          @click="emit('edit', recipe.recipe_id)"
+        >
+          {{ es.actions.edit }}
+        </button>
+      </header>
+
+      <h3 class="recipe-detail__tree-title">{{ es.recipes.composition }}</h3>
+      <RecipeTree
+        v-if="nodes.length > 0"
+        class="recipe-detail__tree"
+        :nodes="nodes"
+        :products="products"
+      />
+      <p v-else class="recipe-detail__empty">{{ es.states.empty }}</p>
+    </template>
+  </section>
+</template>
+
+<style scoped>
+.recipe-detail {
+  min-height: 16rem;
+}
+
+.recipe-detail__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-6);
+}
+
+.recipe-detail__title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  margin-bottom: var(--space-2);
+}
+
+.recipe-detail__meta,
+.recipe-detail__yield {
+  color: var(--color-text-muted);
+}
+
+.recipe-detail__id {
+  margin-left: var(--space-2);
+  font-size: 0.875rem;
+}
+
+.recipe-detail__tree-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  margin-bottom: var(--space-3);
+}
+
+.recipe-detail__tree {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.recipe-detail__empty,
+.recipe-detail__loading {
+  color: var(--color-text-muted);
+}
+
+.skeleton-line {
+  height: 1.25rem;
+  margin-bottom: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-warm);
+}
+
+.skeleton-line--short {
+  width: 40%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-line {
+    animation: none;
+  }
+}
+</style>

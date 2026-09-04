@@ -63,12 +63,20 @@ export const es = {
     conflict: 'Conflicto con el estado actual',
     validationError: 'Error de validación',
     serverError: 'Error del servidor',
+    dependencyCycle: 'Ciclo de dependencia detectado',
+    missingComponent: 'Falta un componente o el producto no existe',
+    unitMismatch: 'La unidad no coincide con la del producto',
+    duplicateComponent: 'La receta no puede repetir el mismo componente',
+    selfComponent: 'Un producto no puede ser componente de su propia receta',
   },
 
   // ============================================================================
   // Product types
   // ============================================================================
   productType: {
+    materia_prima: 'Materia Prima',
+    semiterminado: 'Semiterminado',
+    producto_terminado: 'Producto Terminado',
     raw_material: 'Materia Prima',
     semi_finished: 'Semiterminado',
     finished_product: 'Producto Terminado',
@@ -83,6 +91,7 @@ export const es = {
     ml: 'ml',
     g: 'g',
     unidad: 'unidad',
+    unit: 'unidad',
     porcion: 'porción',
   },
 
@@ -204,6 +213,44 @@ export const es = {
     warning: 'Advertencia',
     info: 'Información',
     productImage: 'Imagen del producto',
+  },
+
+  // ============================================================================
+  // Recipes
+  // ============================================================================
+  recipes: {
+    title: 'Recetas',
+    description: 'Composición y dependencias de producción',
+    listLabel: 'Listado de recetas',
+    create: 'Nueva receta',
+    edit: 'Editar receta',
+    empty: 'No hay recetas registradas',
+    recipeId: 'ID de receta',
+    resultProduct: 'Producto resultante',
+    batchYield: 'Rendimiento del lote',
+    yieldUnit: 'Unidad de rendimiento',
+    components: 'Componentes',
+    component: 'Componente',
+    quantity: 'Cantidad',
+    unit: 'Unidad',
+    addComponent: 'Agregar componente',
+    removeComponent: 'Quitar componente',
+    composition: 'Árbol de composición',
+    selectRecipe: 'Selecciona una receta para ver su composición',
+    cycleBadge: 'Ciclo',
+    saving: 'Guardando...',
+    noMoreComponents: 'No hay más componentes disponibles',
+    loadingList: 'Cargando recetas...',
+    loadingDetail: 'Cargando composición...',
+    loadError: 'No se pudieron cargar las recetas',
+    createTitle: 'Crear receta',
+    editTitle: 'Editar receta',
+    closeEditor: 'Cerrar editor de receta',
+    nestedRecipe: 'Incluye receta anidada',
+    chooseProduct: 'Seleccionar producto',
+    chooseComponent: 'Seleccionar componente',
+    validationSummary: 'Corrige los errores del formulario',
+    componentCount: 'componentes',
   },
 } as const;
 

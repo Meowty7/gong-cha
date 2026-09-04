@@ -1,0 +1,46 @@
+---
+import AppLayout from '../layouts/AppLayout.astro';
+import RecipeWorkspace from '../components/recipes/RecipeWorkspace.vue';
+import { es } from '../lib/i18n/es';
+
+const title = `${es.recipes.title} — ${es.app.name}`;
+---
+
+<AppLayout title={title} description={es.recipes.description}>
+  <div class="recipes-page">
+    <header class="page-header">
+      <h1 class="page-title">{es.recipes.title}</h1>
+      <p class="page-description">{es.recipes.description}</p>
+    </header>
+    <RecipeWorkspace client:load />
+  </div>
+</AppLayout>
+
+<style>
+  .recipes-page {
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  .page-header {
+    margin-bottom: var(--space-8);
+  }
+
+  .page-title {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    color: var(--color-text);
+    margin-bottom: var(--space-3);
+  }
+
+  .page-description {
+    font-size: 1.125rem;
+    color: var(--color-text-muted);
+  }
+
+  @media (min-width: 768px) {
+    .page-title {
+      font-size: 3rem;
+    }
+  }
+</style>

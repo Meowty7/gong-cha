@@ -118,17 +118,8 @@ export async function apiRequest<T>(
       data = null;
     }
 
-    // Handle error responses
     if (!response.ok) {
-      if (isApiErrorResponse(data)) {
-        throw data as ApiError;
-      }
-      // Fallback for non-standard error responses
-      throw createApiError(
-        response.status,
-        'unknown_error',
-        typeof data === 'object' ? JSON.stringify(data) : String(data)
-      );
+      throw toApiError(response.status, data);
     }
 
     return data as T;
@@ -213,6 +204,35 @@ function isApiErrorResponse(error: unknown): error is ApiError {
     'status' in error &&
     'code' in error &&
     'message' in error
+  );
+}
+
+/** Backend writes `{ error: { code, message } }`; normalize to ApiError. */
+function toApiError(status: number, data: unknown): ApiError {
+  if (isApiErrorResponse(data)) {
+    return { status, code: data.code, message: data.message };
+  }
+  if (typeof data === 'object' && data !== null && 'error' in data) {
+    const body = (data as { error: unknown }).error;
+    if (
+      typeof body === 'object' &&
+      body !== null &&
+      'code' in body &&
+      'message' in body &&
+      typeof (body as { code: unknown }).code === 'string' &&
+      typeof (body as { message: unknown }).message === 'string'
+    ) {
+      return {
+        status,
+        code: (body as { code: string }).code,
+        message: (body as { message: string }).message,
+      };
+    }
+  }
+  return createApiError(
+    status,
+    'unknown_error',
+    typeof data === 'object' ? JSON.stringify(data) : String(data)
   );
 }
 
