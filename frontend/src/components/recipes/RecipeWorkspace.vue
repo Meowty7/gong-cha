@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRecipeEditor } from '../../composables/useRecipeEditor';
 import { useRecipes } from '../../composables/useRecipes';
+import { humanizeError } from '../../lib/api/errors';
+import { showToast } from '../../composables/useToast';
 import { es } from '../../lib/i18n/es';
-import { recipeErrorMessage } from '../../lib/recipes/logic';
+import type { ProductType } from '../../types/api';
+import ErrorBanner from '../ErrorBanner.vue';
 import RecipeDetail from './RecipeDetail.vue';
 import RecipeEditSheet from './RecipeEditSheet.vue';
 import RecipeList from './RecipeList.vue';
@@ -43,6 +46,9 @@ const {
   submit,
 } = useRecipeEditor(products);
 
+const searchQuery = ref('');
+const typeFilter = ref<ProductType | ''>('');
+
 onMounted(() => {
   fetchAll();
 });
@@ -52,10 +58,23 @@ function handleEdit(id: string) {
   if (recipe) openEdit(recipe);
 }
 
-function handleSave() {
-  void submit((body) =>
-    editorMode.value === 'create' ? create(body) : update(body.recipe_id, body)
-  );
+async function handleSave() {
+  const creating = editorMode.value === 'create';
+  const ok = await submit((body) => (creating ? create(body) : update(body.recipe_id, body)));
+  if (ok) {
+    showToast({
+      title: es.toast.successTitle,
+      description: creating ? es.recipes.createSuccess : es.recipes.updateSuccess,
+    });
+    return;
+  }
+  if (editorError.value) {
+    showToast({
+      title: es.toast.errorTitle,
+      description: humanizeError(editorError.value),
+      variant: 'error',
+    });
+  }
 }
 </script>
 
@@ -75,14 +94,12 @@ function handleSave() {
       </button>
     </div>
 
-    <div
+    <ErrorBanner
       v-if="error"
-      class="recipe-workspace__alert"
-      role="alert"
-    >
-      <p>{{ es.recipes.loadError }}</p>
-      <p>{{ recipeErrorMessage(error) }}</p>
-    </div>
+      :error="error"
+      :title="es.recipes.loadError"
+      :dismissible="false"
+    />
 
     <div v-if="loading" class="recipe-workspace__loading" aria-live="polite" aria-busy="true">
       <div class="skeleton-block" />
@@ -96,8 +113,12 @@ function handleSave() {
         :recipes="recipes"
         :products="products"
         :selected-id="selectedId"
+        :search-query="searchQuery"
+        :type-filter="typeFilter"
         @select="select"
         @edit="handleEdit"
+        @update:search-query="searchQuery = $event"
+        @update:type-filter="typeFilter = $event"
       />
       <RecipeDetail
         class="recipe-workspace__detail"
@@ -143,14 +164,6 @@ function handleSave() {
   flex-wrap: wrap;
 }
 
-.recipe-workspace__alert {
-  padding: 1rem;
-  color: var(--color-error);
-  background: #fef2f2;
-  border: 1px solid #f0b4b2;
-  border-radius: 0.375rem;
-}
-
 .recipe-workspace__grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -159,10 +172,17 @@ function handleSave() {
 
 .recipe-workspace__list,
 .recipe-workspace__detail {
+  min-width: 0;
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
   padding: 1.5rem;
+}
+
+@media (max-width: 767px) {
+  .recipe-workspace__list,
+  .recipe-workspace__detail {
+    padding: 1rem;
+  }
 }
 
 .recipe-workspace__loading {
@@ -175,13 +195,21 @@ function handleSave() {
   min-height: 16rem;
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
 }
 
 @media (min-width: 1024px) {
   .recipe-workspace__grid,
   .recipe-workspace__loading {
     grid-template-columns: minmax(18rem, 0.9fr) minmax(0, 1.2fr);
+  }
+}
+
+@media (max-width: 1023px) {
+  .recipe-workspace__list {
+    order: 1;
+  }
+  .recipe-workspace__detail {
+    order: 2;
   }
 }
 </style>

@@ -39,22 +39,16 @@ function productName(products: Product[], id: string): string {
     <template v-else>
       <header class="recipe-detail__header">
         <div>
-          <h2 class="recipe-detail__title">{{ recipe.recipe_id }}</h2>
+          <h2 class="recipe-detail__title">{{ productName(products, recipe.product_result_id) }}</h2>
           <p class="recipe-detail__meta">
-            {{ productName(products, recipe.product_result_id) }}
-            <span class="recipe-detail__id">{{ recipe.product_result_id }}</span>
-          </p>
-          <p class="recipe-detail__yield tabular-nums">
-            {{ es.recipes.batchYield }}:
-            {{ recipe.batch_yield }} {{ formatUnit(recipe.yield_unit) }}
+            <code class="recipe-detail__id">{{ recipe.recipe_id }}</code>
+            <span class="recipe-detail__yield tabular-nums">
+              {{ recipe.batch_yield }} {{ formatUnit(recipe.yield_unit) }}
+            </span>
           </p>
         </div>
-        <button
-          type="button"
-          class="btn btn-primary"
-          @click="emit('edit', recipe.recipe_id)"
-        >
-          {{ es.actions.edit }}
+        <button type="button" class="btn btn-secondary" @click="emit('edit', recipe.recipe_id)">
+          {{ es.recipes.edit }}
         </button>
       </header>
 
@@ -85,23 +79,26 @@ function productName(products: Product[], id: string): string {
 }
 
 .recipe-detail__title {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
+  font-weight: 700;
   font-size: 2rem;
   margin-bottom: 0.5rem;
 }
 
-.recipe-detail__meta,
-.recipe-detail__yield {
+.recipe-detail__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   color: var(--color-text-muted);
 }
 
 .recipe-detail__id {
-  margin-left: 0.5rem;
   font-size: 0.875rem;
 }
 
 .recipe-detail__tree-title {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
+  font-weight: 700;
   font-size: 1.25rem;
   margin-bottom: 0.75rem;
 }
@@ -119,7 +116,6 @@ function productName(products: Product[], id: string): string {
 .skeleton-line {
   height: 1.25rem;
   margin-bottom: 0.75rem;
-  border-radius: 0.25rem;
   background: var(--color-bg-warm);
 }
 

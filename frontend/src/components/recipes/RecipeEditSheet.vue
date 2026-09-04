@@ -3,6 +3,7 @@ import { nextTick, onUnmounted, ref, watch } from 'vue';
 import { es } from '../../lib/i18n/es';
 import { recipeErrorMessage, type FieldErrors, type RecipeDraft } from '../../lib/recipes/logic';
 import type { ApiError, Product } from '../../types/api';
+import ErrorBanner from '../ErrorBanner.vue';
 import RecipeComponentRow from './RecipeComponentRow.vue';
 
 interface Props {
@@ -86,7 +87,6 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <Teleport to="body">
     <div v-if="open" class="sheet-root">
       <div
         class="sheet-backdrop"
@@ -119,13 +119,13 @@ onUnmounted(() => {
           </button>
         </header>
 
-        <div
+        <ErrorBanner
           v-if="error"
-          class="sheet-alert"
-          role="alert"
-        >
-          {{ recipeErrorMessage(error) }}
-        </div>
+          class="sheet-error"
+          :error="error"
+          :text="recipeErrorMessage(error)"
+          :dismissible="false"
+        />
 
         <div
           v-if="showErrors && (fieldErrors.recipe_id || fieldErrors.product_result_id || fieldErrors.batch_yield || fieldErrors.yield_unit || fieldErrors.components)"
@@ -159,7 +159,7 @@ onUnmounted(() => {
               id="recipe-result"
               class="input"
               :value="draft.product_result_id"
-              :disabled="pending"
+              :disabled="pending || mode === 'edit'"
               :aria-invalid="showErrors && Boolean(fieldErrors.product_result_id)"
               :aria-describedby="showErrors && fieldErrors.product_result_id ? 'recipe-result-error' : undefined"
               @change="emit('update-field', 'product_result_id', ($event.target as HTMLSelectElement).value)"
@@ -236,8 +236,8 @@ onUnmounted(() => {
             >
               {{ es.recipes.addComponent }}
             </button>
-            <p v-if="!canAddComponent" class="components__hint">
-              {{ es.recipes.noMoreComponents }}
+            <p class="components__hint">
+              {{ canAddComponent ? es.recipes.selfComponentHint : es.recipes.noMoreComponents }}
             </p>
           </fieldset>
 
@@ -261,7 +261,6 @@ onUnmounted(() => {
         </form>
       </aside>
     </div>
-  </Teleport>
 </template>
 
 <style scoped>
@@ -293,8 +292,7 @@ onUnmounted(() => {
 }
 
 .sheet-header,
-.sheet-form,
-.sheet-alert {
+.sheet-form {
   padding: 1.5rem;
 }
 
@@ -307,7 +305,8 @@ onUnmounted(() => {
 }
 
 .sheet-title {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
+  font-weight: 700;
   font-size: 1.75rem;
 }
 
@@ -319,13 +318,18 @@ onUnmounted(() => {
   min-height: 2.75rem;
 }
 
+.sheet-error,
 .sheet-alert {
-  margin: 0 1.5rem;
-  padding: 1rem;
+  margin: 0 1.5rem 0;
+}
+
+.sheet-alert {
+  padding: 0.875rem 1rem;
   color: var(--color-error);
-  background: #fef2f2;
-  border: 1px solid #f0b4b2;
-  border-radius: 0.375rem;
+  background: var(--color-error-soft);
+  border: 1px solid color-mix(in srgb, var(--color-error) 28%, var(--color-border));
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .sheet-form {
@@ -340,12 +344,6 @@ onUnmounted(() => {
   margin-bottom: 0.5rem;
   font-size: 0.8125rem;
   font-weight: 600;
-}
-
-.field__error {
-  margin-top: 0.25rem;
-  font-size: 0.8125rem;
-  color: var(--color-error);
 }
 
 .field-row {

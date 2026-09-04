@@ -1,79 +1,121 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { es } from '../../lib/i18n/es';
-import { formatUnit } from '../../lib/recipes/logic';
-import type { Product, Recipe } from '../../types/api';
+import { formatUnit, productTypeLabel } from '../../lib/recipes/logic';
+import type { Product, ProductType, Recipe } from '../../types/api';
 
 interface Props {
   recipes: Recipe[];
   products: Product[];
   selectedId: string | null;
+  searchQuery?: string;
+  typeFilter?: ProductType | '';
 }
 
 interface Emits {
   (e: 'select', id: string): void;
   (e: 'edit', id: string): void;
+  (e: 'update:searchQuery', value: string): void;
+  (e: 'update:typeFilter', value: ProductType | ''): void;
 }
 
-defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), { searchQuery: '', typeFilter: '' });
 const emit = defineEmits<Emits>();
 
 function productName(products: Product[], id: string): string {
   return products.find((product) => product.product_id === id)?.name ?? id;
 }
+
+function productTypeOf(products: Product[], id: string): ProductType | undefined {
+  return products.find((product) => product.product_id === id)?.type;
+}
+
+const typeOptions: { value: ProductType | ''; label: string }[] = [
+  { value: '', label: es.catalog.allTypes },
+  { value: 'raw_material', label: es.productType.raw_material },
+  { value: 'semi_finished', label: es.productType.semi_finished },
+  { value: 'finished_product', label: es.productType.finished_product },
+];
+
+const filtered = computed(() => {
+  const q = props.searchQuery.trim().toLowerCase();
+  return props.recipes.filter((recipe) => {
+    if (q) {
+      const name = productName(props.products, recipe.product_result_id).toLowerCase();
+      if (!name.includes(q) && !recipe.recipe_id.toLowerCase().includes(q)) return false;
+    }
+    if (props.typeFilter) {
+      const type = productTypeOf(props.products, recipe.product_result_id);
+      if (type !== props.typeFilter) return false;
+    }
+    return true;
+  });
+});
 </script>
 
 <template>
   <div class="recipe-list">
-    <h2 class="recipe-list__title">{{ es.recipes.listLabel }}</h2>
+    <div class="recipe-list__filters">
+      <input
+        class="input recipe-list__search"
+        type="search"
+        :placeholder="es.catalog.searchPlaceholder"
+        :value="searchQuery"
+        @input="emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
+      />
+      <select
+        class="input recipe-list__type-filter"
+        :value="typeFilter"
+        @change="emit('update:typeFilter', ($event.target as HTMLSelectElement).value as ProductType | '')"
+      >
+        <option v-for="opt in typeOptions" :key="opt.value" :value="opt.value">
+          {{ opt.label }}
+        </option>
+      </select>
+    </div>
 
-    <div
-      v-if="recipes.length === 0"
-      class="recipe-list__empty"
-      role="status"
-    >
-      {{ es.recipes.empty }}
+    <div v-if="filtered.length === 0" class="recipe-list__empty" role="status">
+      {{ searchQuery || typeFilter ? es.catalog.noProductsFiltered : es.recipes.empty }}
     </div>
 
     <div v-else class="recipe-list__table-wrap">
-      <table class="recipe-table">
+      <table class="data-table">
         <caption class="sr-only">{{ es.recipes.listLabel }}</caption>
         <thead>
           <tr>
-            <th scope="col">{{ es.recipes.recipeId }}</th>
             <th scope="col">{{ es.recipes.resultProduct }}</th>
-            <th scope="col">{{ es.recipes.batchYield }}</th>
-            <th scope="col">
-              <span class="sr-only">{{ es.actions.edit }}</span>
-            </th>
+            <th scope="col">{{ es.recipes.recipeId }}</th>
+            <th scope="col" class="recipe-table__num">{{ es.recipes.batchYield }}</th>
+            <th scope="col"><span class="sr-only">{{ es.actions.edit }}</span></th>
           </tr>
         </thead>
         <tbody>
           <tr
-            v-for="recipe in recipes"
+            v-for="recipe in filtered"
             :key="recipe.recipe_id"
             :class="{ 'is-selected': recipe.recipe_id === selectedId }"
           >
-            <td>
+            <td :data-label="es.recipes.resultProduct">
               <button
                 type="button"
                 class="recipe-table__select"
                 :aria-current="recipe.recipe_id === selectedId ? 'true' : undefined"
                 @click="emit('select', recipe.recipe_id)"
               >
-                {{ recipe.recipe_id }}
+                {{ productName(products, recipe.product_result_id) }}
               </button>
+              <span class="recipe-table__type">
+                {{ recipe.components.length }} {{ es.recipes.componentCount }}<template v-if="productTypeOf(products, recipe.product_result_id)"> · {{ productTypeLabel(productTypeOf(products, recipe.product_result_id)!) }}</template>
+              </span>
             </td>
-            <td>
-              <span class="recipe-table__name">{{ productName(products, recipe.product_result_id) }}</span>
-              <span class="recipe-table__id">{{ recipe.product_result_id }}</span>
-            </td>
-            <td class="tabular-nums">
+            <td :data-label="es.recipes.recipeId"><code>{{ recipe.recipe_id }}</code></td>
+            <td class="recipe-table__num tabular-nums" :data-label="es.recipes.batchYield">
               {{ recipe.batch_yield }} {{ formatUnit(recipe.yield_unit) }}
             </td>
-            <td>
+            <td class="recipe-table__num">
               <button
                 type="button"
-                class="btn btn-secondary recipe-table__edit"
+                class="recipe-table__edit"
                 :aria-label="`${es.actions.edit} ${recipe.recipe_id}`"
                 @click="emit('edit', recipe.recipe_id)"
               >
@@ -88,10 +130,21 @@ function productName(products: Product[], id: string): string {
 </template>
 
 <style scoped>
-.recipe-list__title {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
+.recipe-list__filters {
+  display: flex;
+  gap: 0.75rem;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.recipe-list__search {
+  flex: 1;
+  min-width: 150px;
+  max-width: 300px;
+}
+
+.recipe-list__type-filter {
+  min-width: 140px;
 }
 
 .recipe-list__empty {
@@ -104,55 +157,52 @@ function productName(products: Product[], id: string): string {
   overflow-x: auto;
 }
 
-.recipe-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.875rem;
+.recipe-table__num {
+  text-align: end;
 }
 
-.recipe-table th,
-.recipe-table td {
-  padding: 0.75rem 0.75rem;
-  text-align: left;
-  border-bottom: 1px solid var(--color-border);
-  vertical-align: middle;
-}
-
-.recipe-table th {
-  font-weight: 600;
-  color: var(--color-text-muted);
-}
-
-.recipe-table tr.is-selected {
-  background: var(--color-bg-hover);
+.recipe-list__table-wrap td:first-child {
+  white-space: normal;
 }
 
 .recipe-table__select {
+  display: block;
   appearance: none;
   background: none;
   border: 0;
   padding: 0;
   font: inherit;
   font-weight: 600;
-  color: var(--color-primary);
+  color: var(--color-text);
   cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  text-align: start;
 }
 
-.recipe-table__name {
-  display: block;
-  font-weight: 600;
+.recipe-table__select:hover {
+  color: var(--color-primary-dark);
 }
 
-.recipe-table__id {
+.recipe-table__type {
   display: block;
-  color: var(--color-text-muted);
+  margin-top: 0.125rem;
   font-size: 0.75rem;
+  color: var(--color-text-subtle);
 }
 
 .recipe-table__edit {
-  min-height: 2.75rem;
-  padding-inline: 0.75rem;
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0.25rem 0;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.recipe-table__edit:hover {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
 }
 </style>
