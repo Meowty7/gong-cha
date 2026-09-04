@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import type { Requirement } from '../../types/api';
 import { es } from '../../lib/i18n/es';
+import HelpTip from './HelpTip.vue';
 
 const props = defineProps<{
   rows: Requirement[];
   caption: string;
+  hint?: string;
   productNames?: Record<string, string>;
   emptyText?: string;
 }>();
@@ -22,7 +24,12 @@ function unitLabel(unit: string): string {
 <template>
   <div class="req">
     <table class="req__table" :aria-label="caption">
-      <caption>{{ caption }}</caption>
+      <caption>
+        <span class="req__caption">
+          {{ caption }}
+          <HelpTip v-if="hint" :text="hint" />
+        </span>
+      </caption>
       <thead>
         <tr>
           <th scope="col">{{ es.calculations.product }}</th>
@@ -60,14 +67,21 @@ function unitLabel(unit: string): string {
 .req__table caption {
   caption-side: top;
   text-align: left;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
+  font-weight: 700;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
   color: var(--color-text);
+}
+
+.req__caption {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .req__table th,
 .req__table td {
-  padding: 0.875rem 1.25rem;
+  padding: 0.625rem 0.75rem;
   text-align: left;
   border-bottom: 1px solid var(--color-border);
   vertical-align: top;

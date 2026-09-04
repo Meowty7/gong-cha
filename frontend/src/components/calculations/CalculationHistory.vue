@@ -75,12 +75,13 @@ onUnmounted(() => {
 .history {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .history__title {
   margin: 0;
   font-size: 1.125rem;
+  font-weight: 700;
 }
 
 .muted {

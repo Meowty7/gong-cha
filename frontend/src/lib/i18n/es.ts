@@ -202,6 +202,7 @@ export const es = {
     adjustSuccess: 'Inventario ajustado exitosamente',
     quantityPlaceholder: 'Ej: 150.5',
     locationPlaceholder: 'Ej: Bodega principal',
+    locationLocked: 'La ubicación viene de los datos oficiales y no se puede cambiar.',
   },
 
   // ============================================================================
@@ -248,6 +249,7 @@ export const es = {
     info: 'Información',
     productImage: 'Imagen del producto',
     dismissError: 'Cerrar aviso de error',
+    help: 'Ayuda',
   },
 
   // ============================================================================
@@ -301,17 +303,16 @@ export const es = {
   // ============================================================================
   calculations: {
     title: 'Cálculos',
-    description: 'Responde preguntas de producción usando tus recetas y el inventario actual',
-    goalTitle: '¿Qué quieres saber?',
-    goalHint: 'Elige una opción. Solo verás los datos necesarios para ese cálculo.',
-    capacityChoice: '¿Cuánto puedo producir?',
-    capacityChoiceHint: 'Calcula cuántas unidades permite el inventario actual.',
-    requirementsChoice: '¿Qué necesito para producir?',
-    requirementsChoiceHint: 'Calcula los insumos necesarios para una cantidad específica.',
-    directTitle: '¿Cuánto puedo producir?',
-    directDescription: 'Elige un producto y calcularemos cuántas unidades completas puedes preparar.',
-    inverseTitle: '¿Qué necesito para producir?',
-    inverseDescription: 'Elige un producto y la cantidad que deseas preparar.',
+    description: 'Capacidad de producción y requerimiento de insumos a partir de recetas e inventario',
+    goalTitle: 'Tipo de cálculo',
+    capacityChoice: 'Capacidad de producción',
+    capacityChoiceHint: 'Cuántas unidades permite el inventario actual.',
+    requirementsChoice: 'Requerimiento de insumos',
+    requirementsChoiceHint: 'Insumos necesarios para una cantidad específica.',
+    directTitle: 'Capacidad de producción',
+    directDescription: 'Unidades completas que se pueden preparar con el inventario actual.',
+    inverseTitle: 'Requerimiento de insumos',
+    inverseDescription: 'Insumos para el producto y la cantidad indicados.',
     product: 'Producto',
     productToPrepare: 'Producto que quieres preparar',
     productId: 'ID',
@@ -392,7 +393,7 @@ export const es = {
     perLineCaption: 'Expansión de la línea de demanda',
     shortage: 'Faltante',
     enough: 'Cubierto',
-    compareCaption: 'Comparación de insumos consolidados contra existencias',
+    compareCaption: 'Insumos vs inventario',
     need: 'Necesario',
     have: 'En inventario',
     shortBy: 'Faltan {qty} {unit}',
@@ -401,6 +402,15 @@ export const es = {
     modeLegend: 'Modo de planificación',
     modeStored: 'Usar evento guardado',
     modeInline: 'Capturar demanda',
+    summaryReady: 'El inventario cubre este evento',
+    summaryShort: '{n} insumos no alcanzan',
+    statMaterials: 'Insumos',
+    statShort: 'Faltantes',
+    statCovered: 'Cubiertos',
+    statLines: 'Líneas',
+    breakdownHint: 'De dónde sale cada insumo, por producto del evento',
+    lineImmediate: 'Componentes inmediatos',
+    lineRaw: 'Materias primas de esta línea',
   },
 
   // ============================================================================

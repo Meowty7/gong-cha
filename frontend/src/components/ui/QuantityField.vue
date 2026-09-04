@@ -41,7 +41,7 @@ const emit = defineEmits<{
 .field {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
   min-width: 0;
 }
 

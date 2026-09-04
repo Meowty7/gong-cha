@@ -47,12 +47,7 @@ const quantityError = computed(() =>
 </script>
 
 <template>
-  <section class="panel card" aria-labelledby="inverse-title">
-    <header>
-      <h2 id="inverse-title" class="panel__title">{{ es.calculations.inverseTitle }}</h2>
-      <p class="panel__lead">{{ es.calculations.inverseDescription }}</p>
-    </header>
-
+  <section class="panel card" :aria-label="es.calculations.inverseTitle">
     <ErrorBanner :error="error" @dismiss="dismissError" />
 
     <form class="panel__form" @submit.prevent="submit">
@@ -60,13 +55,13 @@ const quantityError = computed(() =>
         id="inverse-product"
         v-model="productId"
         :products="producible"
-        :label="es.calculations.productToPrepare"
+        :label="es.calculations.product"
         required
       />
       <QuantityField
         id="inverse-quantity"
         v-model="quantity"
-        :label="es.calculations.quantityToProduce"
+        :label="es.calculations.quantity"
         :error="quantityError"
         :unit="selectedUnit"
         required
@@ -105,6 +100,7 @@ const quantityError = computed(() =>
         <RequirementTable
           :rows="result.raw_materials"
           :caption="es.calculations.totalRequirements"
+          :hint="es.calculations.rawMaterialsCaption"
           :product-names="productNames"
         />
         <details class="result-detail">
@@ -112,7 +108,8 @@ const quantityError = computed(() =>
           <div class="result-detail__content">
             <RequirementTable
               :rows="result.immediate"
-              :caption="es.calculations.immediateCaption"
+              :caption="es.calculations.immediate"
+              :hint="es.calculations.immediateCaption"
               :product-names="productNames"
             />
           </div>
@@ -134,26 +131,15 @@ const quantityError = computed(() =>
 .panel {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-}
-
-.panel__title {
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: 1.75rem;
-  margin: 0 0 0.5rem;
-}
-
-.panel__lead {
-  margin: 0;
-  color: var(--color-text-muted);
+  gap: 1rem;
+  padding: 1rem;
 }
 
 .panel__form,
 .results {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .answer {
@@ -184,7 +170,8 @@ const quantityError = computed(() =>
 .answer__hint {
   margin: 0.375rem 0 0;
   color: var(--color-text-muted);
-  font-size: 0.875rem;
+  font-size: 0.75rem;
+  font-weight: 400;
 }
 
 .result-detail {
@@ -192,9 +179,9 @@ const quantityError = computed(() =>
 }
 
 .result-detail > summary {
-  padding: 0.875rem 1rem;
+  padding: 0.625rem 0.75rem;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .result-detail > summary:hover {
@@ -211,8 +198,9 @@ const quantityError = computed(() =>
 }
 
 .incomplete__title {
-  margin: 0 0 0.5rem;
-  font-size: 1.125rem;
+  margin: 0 0 0.375rem;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .incomplete ul {

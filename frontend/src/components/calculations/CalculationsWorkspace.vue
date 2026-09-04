@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, shallowRef } from 'vue';
+import { TabsIndicator, TabsList, TabsRoot, TabsTrigger } from 'reka-ui';
 import { useProductIndex } from '../../composables/useProductIndex';
 import { useInventorySnapshot } from '../../composables/useInventorySnapshot';
 import { es } from '../../lib/i18n/es';
@@ -29,6 +30,11 @@ type CalculationMode = 'capacity' | 'requirements';
 
 const mode = shallowRef<CalculationMode>('capacity');
 const dataLoading = computed(() => catalogLoading.value || stockLoading.value);
+const modeHint = computed(() =>
+  mode.value === 'capacity'
+    ? es.calculations.capacityChoiceHint
+    : es.calculations.requirementsChoiceHint
+);
 
 onMounted(() => {
   void loadCatalog();
@@ -45,36 +51,18 @@ onMounted(() => {
       :dismissible="false"
     />
 
-    <section class="goal" aria-labelledby="calculation-goal">
-      <div class="goal__header">
-        <div>
-          <h2 id="calculation-goal" class="goal__title">{{ es.calculations.goalTitle }}</h2>
-          <p class="goal__hint">{{ es.calculations.goalHint }}</p>
-        </div>
-      </div>
-      <div class="goal__options" role="group" :aria-label="es.calculations.goalTitle">
-        <button
-          type="button"
-          class="goal__option"
-          :class="{ 'goal__option--active': mode === 'capacity' }"
-          :aria-pressed="mode === 'capacity'"
-          @click="mode = 'capacity'"
-        >
-          <span class="goal__option-title">{{ es.calculations.capacityChoice }}</span>
-          <span class="goal__option-hint">{{ es.calculations.capacityChoiceHint }}</span>
-        </button>
-        <button
-          type="button"
-          class="goal__option"
-          :class="{ 'goal__option--active': mode === 'requirements' }"
-          :aria-pressed="mode === 'requirements'"
-          @click="mode = 'requirements'"
-        >
-          <span class="goal__option-title">{{ es.calculations.requirementsChoice }}</span>
-          <span class="goal__option-hint">{{ es.calculations.requirementsChoiceHint }}</span>
-        </button>
-      </div>
-    </section>
+    <TabsRoot v-model="mode" class="tabs">
+      <TabsList class="tabs__list" :aria-label="es.calculations.goalTitle">
+        <TabsIndicator class="tabs__indicator" />
+        <TabsTrigger value="capacity" class="tabs__trigger">
+          {{ es.calculations.capacityChoice }}
+        </TabsTrigger>
+        <TabsTrigger value="requirements" class="tabs__trigger">
+          {{ es.calculations.requirementsChoice }}
+        </TabsTrigger>
+      </TabsList>
+      <p class="tabs__hint">{{ modeHint }}</p>
+    </TabsRoot>
 
     <ContentLoader :loading="dataLoading" :has-items="products.length > 0" variant="lines">
       <div class="workspace__panel">
@@ -101,77 +89,72 @@ onMounted(() => {
 .workspace {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
-.goal {
-  padding: 1.25rem;
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
-}
-
-.goal__header {
-  display: flex;
-  align-items: flex-start;
-}
-
-.goal__title {
-  margin: 0;
-  font-size: 1.125rem;
-}
-
-.goal__hint {
-  margin: 0.25rem 0 0;
-  color: var(--color-text-muted);
-  font-size: 0.875rem;
-}
-
-.goal__options {
-  display: grid;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-
-.goal__option {
+.tabs {
   display: flex;
   flex-direction: column;
+  gap: 0.375rem;
+}
+
+.tabs__list {
+  position: relative;
+  isolation: isolate;
+  display: flex;
   gap: 0.25rem;
-  padding: 0.875rem 1rem;
-  text-align: left;
-  color: var(--color-text);
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tabs__trigger {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 2.5rem;
+  padding: 0 1rem;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
   cursor: pointer;
+  outline: 0;
+  transition: color var(--duration-fast) var(--ease-out);
 }
 
-.goal__option:hover {
-  background: var(--color-bg-hover);
-  border-color: var(--color-primary-light);
+.tabs__trigger[data-state='active'] {
+  color: var(--color-primary-dark);
 }
 
-.goal__option--active {
-  background: var(--color-primary-soft);
-  border-color: var(--color-primary);
-  box-shadow: inset 3px 0 0 var(--color-primary);
+.tabs__trigger:focus-visible {
+  z-index: 1;
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
-.goal__option-title {
-  font-size: 0.9375rem;
-  font-weight: 700;
+.tabs__indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: var(--reka-tabs-indicator-size);
+  height: 2px;
+  transform: translateX(var(--reka-tabs-indicator-position)) translateY(1px);
+  background: var(--color-primary);
+  transition:
+    width var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out);
 }
 
-.goal__option-hint {
-  font-size: 0.8125rem;
+.tabs__hint {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.4;
   color: var(--color-text-muted);
 }
 
 .workspace__panel {
   max-width: 48rem;
-}
-
-@media (min-width: 768px) {
-  .goal__options {
-    grid-template-columns: 1fr 1fr;
-  }
 }
 </style>

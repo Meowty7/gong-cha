@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, shallowRef, watch } from 'vue';
 import type { InventoryBalance, UpsertInventoryRequest, Unit } from '../types/api';
 import { es } from '../lib/i18n/es';
 
@@ -23,8 +23,8 @@ const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 // Form state
-const quantity = ref('');
-const location = ref('Bodega principal');
+const quantity = shallowRef('');
+const location = computed(() => props.currentBalance?.location?.trim() || 'Bodega principal');
 const unit = computed(() => props.productUnit ?? props.currentBalance?.unit);
 const unitLabel = computed(() => {
   const value = unit.value;
@@ -40,7 +40,6 @@ watch(
   (balance) => {
     if (balance) {
       quantity.value = balance.quantity;
-      location.value = balance.location;
     }
   },
   { immediate: true }
@@ -61,10 +60,6 @@ function validateForm(): boolean {
     }
   }
 
-  if (!location.value.trim()) {
-    errors.value.location = es.forms.required;
-  }
-
   if (!unit.value) {
     errors.value.unit = es.forms.required;
   }
@@ -80,7 +75,7 @@ function handleSubmit() {
   const data: UpsertInventoryRequest = {
     quantity: quantity.value.trim(),
     unit: unit.value,
-    location: location.value.trim(),
+    location: location.value,
   };
 
   emit('submit', data);
@@ -148,26 +143,18 @@ function handleCancel() {
       <p class="form-hint">{{ es.product.unitLocked }}</p>
     </div>
 
-    <!-- Location -->
     <div class="form-field">
       <label for="inventory-location" class="form-label">
         {{ es.inventory.location }}
-        <span class="form-label__required">*</span>
       </label>
       <input
         id="inventory-location"
-        v-model="location"
         type="text"
         class="input"
-        :class="{ 'input--error': errors.location }"
-        :placeholder="es.inventory.locationPlaceholder"
-        :disabled="loading"
-        :aria-invalid="!!errors.location"
-        :aria-describedby="errors.location ? 'inventory-location-error' : undefined"
+        :value="location"
+        disabled
       />
-      <p v-if="errors.location" id="inventory-location-error" class="form-error">
-        {{ errors.location }}
-      </p>
+      <p class="form-hint">{{ es.inventory.locationLocked }}</p>
     </div>
 
     <!-- Validation summary -->

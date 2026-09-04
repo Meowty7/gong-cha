@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, shallowRef } from 'vue';
 import { useDirectCalculation } from '../../composables/useDirectCalculation';
 import type { InventoryBalance, Product } from '../../types/api';
 import { formatWhen } from '../../lib/datetime';
 import { isNonNegativeQuantity, isPositiveQuantity } from '../../lib/quantity';
 import { es } from '../../lib/i18n/es';
 import ErrorBanner from '../ErrorBanner.vue';
+import HelpTip from '../ui/HelpTip.vue';
 import ProductSelect from '../ui/ProductSelect.vue';
 import QuantityField from '../ui/QuantityField.vue';
 import RequirementTable from '../ui/RequirementTable.vue';
@@ -37,6 +38,7 @@ const {
 } = useDirectCalculation();
 
 const useDirectPick = ref('');
+const advancedOpen = shallowRef(false);
 
 const producible = computed(() =>
   props.products.filter((product) => product.type !== 'raw_material')
@@ -101,12 +103,7 @@ function onSubmit() {
 </script>
 
 <template>
-  <section class="panel card" aria-labelledby="direct-title">
-    <header class="panel__header">
-      <h2 id="direct-title" class="panel__title">{{ es.calculations.directTitle }}</h2>
-      <p class="panel__lead">{{ es.calculations.directDescription }}</p>
-    </header>
-
+  <section class="panel card" :aria-label="es.calculations.directTitle">
     <ErrorBanner :error="error" @dismiss="dismissError" />
 
     <form class="panel__form" @submit.prevent="onSubmit">
@@ -114,22 +111,29 @@ function onSubmit() {
         id="direct-product"
         v-model="productId"
         :products="producible"
-        :label="es.calculations.productToPrepare"
+        :label="es.calculations.product"
         required
       />
 
-      <details class="advanced">
-        <summary class="advanced__summary">
-          <span>
-            <strong>{{ es.calculations.advancedOptions }}</strong>
-            <small>{{ es.calculations.advancedHint }}</small>
-          </span>
-          <span aria-hidden="true">+</span>
-        </summary>
-        <div class="advanced__content">
+      <div class="advanced">
+        <div class="advanced__bar">
+          <button
+            type="button"
+            class="advanced__toggle"
+            :aria-expanded="advancedOpen"
+            @click="advancedOpen = !advancedOpen"
+          >
+            <span class="advanced__label">{{ es.calculations.advancedOptions }}</span>
+            <span aria-hidden="true">{{ advancedOpen ? '−' : '+' }}</span>
+          </button>
+          <HelpTip :text="es.calculations.advancedHint" />
+        </div>
+        <div v-if="advancedOpen" class="advanced__content">
           <fieldset class="group">
-            <legend class="group__legend">{{ es.calculations.inventoryOverrides }}</legend>
-            <p class="group__hint">{{ es.calculations.overrideHint }}</p>
+            <legend class="group__legend">
+              {{ es.calculations.inventoryOverrides }}
+              <HelpTip :text="es.calculations.overrideHint" />
+            </legend>
             <label class="check">
               <input v-model="replaceInventory" type="checkbox" />
               <span>{{ es.calculations.replaceInventory }}</span>
@@ -165,8 +169,10 @@ function onSubmit() {
           </fieldset>
 
           <fieldset class="group">
-            <legend class="group__legend">{{ es.calculations.useDirect }}</legend>
-            <p class="group__hint">{{ es.calculations.useDirectHint }}</p>
+            <legend class="group__legend">
+              {{ es.calculations.useDirect }}
+              <HelpTip :text="es.calculations.useDirectHint" />
+            </legend>
             <div class="override">
               <ProductSelect
                 id="use-direct-pick"
@@ -194,7 +200,7 @@ function onSubmit() {
             </ul>
           </fieldset>
         </div>
-      </details>
+      </div>
 
       <p v-if="fieldError" class="field-error" role="alert">{{ fieldError }}</p>
 
@@ -234,19 +240,20 @@ function onSubmit() {
         <RequirementTable
           v-if="result.consumed?.length"
           :rows="result.consumed"
-          :caption="es.calculations.consumedCaption"
+          :caption="es.calculations.consumed"
+          :hint="es.calculations.consumedCaption"
           :product-names="productNames"
         />
 
         <div class="leftovers">
           <RequirementTable
             :rows="result.leftovers"
-            :caption="es.calculations.leftoversCaption"
+            :caption="es.calculations.leftovers"
+            :hint="es.calculations.leftoversCaption"
             :product-names="productNames"
             :empty-text="es.calculations.noLeftovers"
           />
           <div v-if="leftoverBars.length" class="bars">
-            <h3 class="bars__title">{{ es.calculations.leftovers }}</h3>
             <StockBar
               v-for="bar in leftoverBars"
               :key="bar.id"
@@ -267,19 +274,8 @@ function onSubmit() {
 .panel {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-}
-
-.panel__title {
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: 1.75rem;
-  margin: 0 0 0.5rem;
-}
-
-.panel__lead {
-  margin: 0;
-  color: var(--color-text-muted);
+  gap: 1rem;
+  padding: 1rem;
 }
 
 .panel__form,
@@ -288,70 +284,68 @@ function onSubmit() {
 .bars {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .advanced {
   border: 1px solid var(--color-border);
 }
 
-.advanced__summary {
+.advanced__bar {
   display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding-right: 0.5rem;
+}
+
+.advanced__toggle {
+  display: flex;
+  flex: 1;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.875rem 1rem;
+  padding: 0.625rem 0.75rem;
+  color: inherit;
+  background: transparent;
+  border: none;
   cursor: pointer;
 }
 
-.advanced__summary:hover {
+.advanced__toggle:hover {
   background: var(--color-bg-hover);
 }
 
-.advanced__summary span:first-child {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-}
-
-.advanced__summary small {
-  color: var(--color-text-muted);
-  font-size: 0.8125rem;
-}
-
-.advanced[open] .advanced__summary > span:last-child {
-  rotate: 45deg;
+.advanced__label {
+  font-size: 0.875rem;
+  font-weight: 700;
 }
 
 .advanced__content {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding: 0 1rem 1rem;
+  gap: 0.75rem;
+  padding: 0 0.75rem 0.75rem;
 }
 
 .leftovers {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .group {
   margin: 0;
-  padding: 1rem;
+  padding: 0.75rem;
   border: 1px solid var(--color-border);
 }
 
 .group__legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   padding: 0 0.5rem;
   font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.group__hint {
-  margin: 0;
-  font-size: 0.8125rem;
-  color: var(--color-text-muted);
+  font-weight: 700;
 }
 
 .check {
@@ -370,7 +364,7 @@ function onSubmit() {
 .override {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.75rem;
+  gap: 0.5rem;
   align-items: end;
 }
 
@@ -439,12 +433,8 @@ function onSubmit() {
 .answer__hint {
   margin: 0.375rem 0 0;
   color: var(--color-text-muted);
-  font-size: 0.875rem;
-}
-
-.bars__title {
-  margin: 0;
-  font-size: 1.125rem;
+  font-size: 0.75rem;
+  font-weight: 400;
 }
 
 .fade-enter-active,
