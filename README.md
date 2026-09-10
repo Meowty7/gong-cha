@@ -71,7 +71,7 @@ Casos oficiales: `xlsx_export/Casos_Validacion.csv`.
 ## Documentación
 
 - [`Reglamento_GongchaCUP_2026.md`](./Reglamento_GongchaCUP_2026.md)
-- [`Documento_Tecnico_GongchaCUP_2026.pdf`](./Documento_Tecnico_GongchaCUP_2026.pdf)
+- [`Documento_Tecnico_GongchaCUP_2026.md`](./Documento_Tecnico_GongchaCUP_2026.md)
 - [`xlsx_export/LEEME.csv`](./xlsx_export/LEEME.csv)
 
 ## Estructura
